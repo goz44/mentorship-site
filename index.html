@@ -13,13 +13,14 @@ body{
   color:white;
 }
 
-#login{
+#loginScreen{
   position:fixed;
   inset:0;
   background:black;
   display:flex;
   justify-content:center;
   align-items:center;
+  z-index: 100;
 }
 
 .login-box{
@@ -27,6 +28,7 @@ body{
   padding:30px;
   border-radius:20px;
   backdrop-filter:blur(10px);
+  text-align: center;
 }
 
 .card{
@@ -36,15 +38,16 @@ body{
   margin:20px;
 }
 
-textarea, select{
+textarea, select, input{
   width:100%;
   margin-bottom:10px;
   padding:10px;
   border-radius:10px;
+  box-sizing: border-box;
 }
 
 button{
-  padding:10px;
+  padding:10px 20px;
   margin:5px;
   border:none;
   border-radius:10px;
@@ -52,22 +55,24 @@ button{
   color:white;
   cursor:pointer;
 }
+
+button:hover{
+  background:#2563eb;
+}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="login">
+<div id="loginScreen">
   <div class="login-box">
     <h2>Login</h2>
-    <input type="password" id="pass" placeholder="password">
-    <button onclick="login()">Enter</button>
+    <input type="password" id="pass" placeholder="Password">
+    <button onclick="loginApp()">Enter</button>
   </div>
 </div>
 
-<!-- APP -->
-<div id="app" style="display:none">
+<div id="appContainer" style="display:none">
 
   <div class="card">
     <h2>📦 Daily Report</h2>
@@ -82,8 +87,8 @@ button{
     <textarea id="business" placeholder="Business..."></textarea>
     <textarea id="growth" placeholder="Growth..."></textarea>
 
-    <button onclick="save()">Save</button>
-    <button onclick="load()">Load</button>
+    <button onclick="saveReport()">Save</button>
+    <button onclick="loadReports()">Load</button>
   </div>
 
   <div id="list"></div>
@@ -99,8 +104,7 @@ button{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-/* 🔥 FIREBASE CONFIG (ӨӨРИЙНХӨӨ СОЛИНО) */
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+/* 🔥 FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyB8OgrYt4vvC92Gu-MFzMY5khZDLHeqneY",
   authDomain: "goz44-2e14c.firebaseapp.com",
@@ -110,96 +114,115 @@ const firebaseConfig = {
   appId: "1:819051445534:web:b6afa5ca388b16f4975d0f",
   measurementId: "G-MTVJ35E06H"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 /* LOGIN */
-window.login = function(){
-  if(document.getElementById('pass').value==="1234"){
-    login.style.display="none";
-    app.style.display="block";
-  } else alert("wrong password");
+window.loginApp = function(){
+  const password = document.getElementById('pass').value;
+  if(password === "1234"){
+    document.getElementById('loginScreen').style.display = "none";
+    document.getElementById('appContainer').style.display = "block";
+    initChart();
+  } else {
+    alert("Wrong password!");
+  }
 }
 
 /* SAVE */
-window.save = async function(){
-  const week = weekSelect.value;
+window.saveReport = async function(){
+  try {
+    const week = document.getElementById('weekSelect').value;
+    const ind = document.getElementById('industry').value;
+    const bus = document.getElementById('business').value;
+    const gro = document.getElementById('growth').value;
 
-  await addDoc(collection(db,"reports"),{
-    industry:industry.value,
-    business:business.value,
-    growth:growth.value,
-    week:week,
-    reviewed:false,
-    comment:"",
-    time:Date.now()
-  });
+    await addDoc(collection(db, "reports"), {
+      industry: ind,
+      business: bus,
+      growth: gro,
+      week: week,
+      reviewed: false,
+      comment: "",
+      time: Date.now()
+    });
 
-  alert("saved");
+    alert("Saved successfully!");
+    document.getElementById('industry').value = "";
+    document.getElementById('business').value = "";
+    document.getElementById('growth').value = "";
+  } catch (e) {
+    console.error("Error saving: ", e);
+    alert("Error saving report");
+  }
 }
 
-/* LOAD + FILTER */
-window.load = async function(){
-  const selectedWeek = weekSelect.value;
-  const q = await getDocs(collection(db,"reports"));
+/* LOAD */
+window.loadReports = async function(){
+  const selectedWeek = document.getElementById('weekSelect').value;
+  const listDiv = document.getElementById('list');
+  const q = await getDocs(collection(db, "reports"));
 
-  list.innerHTML = "";
+  listDiv.innerHTML = "";
 
-  q.forEach(docSnap=>{
+  q.forEach(docSnap => {
     const data = docSnap.data();
-
     if(data.week !== selectedWeek) return;
 
     const div = document.createElement("div");
-    div.className="card";
-
+    div.className = "card";
     div.innerHTML = `
       <p><b>Industry:</b> ${data.industry}</p>
       <p><b>Business:</b> ${data.business}</p>
       <p><b>Growth:</b> ${data.growth}</p>
       <p>Status: ${data.reviewed ? "✅ Reviewed" : "❌ Not reviewed"}</p>
-
       <textarea id="c-${docSnap.id}" placeholder="Mentor comment">${data.comment || ""}</textarea>
-      <button onclick="review('${docSnap.id}')">Review</button>
+      <button onclick="reviewReport('${docSnap.id}')">Review</button>
     `;
-
-    list.appendChild(div);
+    listDiv.appendChild(div);
   });
 }
 
 /* REVIEW */
-window.review = async function(id){
-  const comment = document.getElementById(c-${id}).value;
-
-  await updateDoc(doc(db,"reports",id),{
-    reviewed:true,
-    comment:comment
+window.reviewReport = async function(id){
+  const commentValue = document.getElementById(`c-${id}`).value;
+  await updateDoc(doc(db, "reports", id), {
+    reviewed: true,
+    comment: commentValue
   });
-
   alert("Reviewed!");
-  load();
+  loadReports();
 }
 
 /* CHART */
 import "https://cdn.jsdelivr.net/npm/chart.js";
 
-setTimeout(()=>{
-const ctx=document.getElementById('chart');
-
-new Chart(ctx,{
-  type:'radar',
-  data:{
-    labels:['Industry','Business','Growth'],
-    datasets:[{
-      label:'Skill',
-      data:[3,4,5]
-    }]
-  }
-});
-},1000);
-
+function initChart() {
+  const ctx = document.getElementById('chart');
+  new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: ['Industry', 'Business', 'Growth'],
+      datasets: [{
+        label: 'Skill Level',
+        data: [3, 4, 5],
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        borderColor: '#3b82f6',
+        color: '#fff'
+      }]
+    },
+    options: {
+      scales: {
+        r: {
+          grid: { color: 'rgba(255,255,255,0.1)' },
+          pointLabels: { color: '#fff' }
+        }
+      }
+    }
+  });
+}
 </script>
 
 </body>
 </html>
-
