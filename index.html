@@ -1,1 +1,201 @@
-<!DOCTYPE html> <html lang="mn"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Week 2 - Creative</title> <style> body { margin: 0; font-family: Arial, sans-serif; background: #0f172a; color: white; overflow-x: hidden; } /* HERO */ .hero { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(135deg, #0f172a, #1e3a8a, #7c3aed); text-align: center; } .hero h1 { font-size: 60px; margin: 0; } .hero p { opacity: 0.7; } /* SECTION */ .section { padding: 100px 20px; display: flex; justify-content: center; } .card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); padding: 40px; border-radius: 20px; max-width: 800px; width: 100%; transform: translateY(50px); opacity: 0; transition: all 0.6s ease; } .card.show { transform: translateY(0); opacity: 1; } /* TITLE */ .title { font-size: 32px; margin-bottom: 20px; } /* LIST */ ul { line-height: 1.8; } /* CURSOR GLOW */ .cursor { position: fixed; width: 20px; height: 20px; background: radial-gradient(circle, #3b82f6, transparent); border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); } </style> </head> <body> <div class="cursor" id="cursor"></div> <!-- HERO --> <section class="hero"> <h1>WEEK 2</h1> <p>Салбарын ерөнхий мэдлэг</p> </section> <!-- INDUSTRY --> <section class="section"> <div class="card"> <div class="title">📦 Industry Knowledge</div> <ul> <li>Логистикийн үндэс ойлголт</li> <li>Олон улсын тээвэр</li> <li>Supply chain урсгал</li> </ul> </div> </section> <!-- BUSINESS --> <section class="section"> <div class="card"> <div class="title">💼 Business Knowledge</div> <ul> <li>Why – Асуудал</li> <li>Who – Зорилтот хэрэглэгч</li> <li>What – Шийдэл</li> <li>How – Хэрэгжүүлэх</li> </ul> </div> </section> <!-- GROWTH --> <section class="section"> <div class="card"> <div class="title">📈 Personal Growth</div> <ul> <li>Цаг хугацааны үнэ цэнэ</li> <li>Анхаарал төвлөрөл</li> <li>Өсөлтийн mindset</li> </ul> </div> </section> <script> /* SCROLL ANIMATION */ const cards = document.querySelectorAll('.card'); window.addEventListener('scroll', () => { cards.forEach(card => { const top = card.getBoundingClientRect().top; if(top < window.innerHeight - 100){ card.classList.add('show'); } }); }); /* CURSOR EFFECT */ const cursor = document.getElementById('cursor'); document.addEventListener('mousemove', e => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; }); </script> </body> </html>
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mentorship System</title>
+
+<style>
+body{
+  margin:0;
+  font-family:sans-serif;
+  background:#0f172a;
+  color:white;
+}
+
+#login{
+  position:fixed;
+  inset:0;
+  background:black;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.login-box{
+  background:rgba(255,255,255,0.1);
+  padding:30px;
+  border-radius:20px;
+  backdrop-filter:blur(10px);
+}
+
+.card{
+  background:rgba(255,255,255,0.05);
+  padding:20px;
+  border-radius:20px;
+  margin:20px;
+}
+
+textarea, select{
+  width:100%;
+  margin-bottom:10px;
+  padding:10px;
+  border-radius:10px;
+}
+
+button{
+  padding:10px;
+  margin:5px;
+  border:none;
+  border-radius:10px;
+  background:#3b82f6;
+  color:white;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-box">
+    <h2>Login</h2>
+    <input type="password" id="pass" placeholder="password">
+    <button onclick="login()">Enter</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+
+  <div class="card">
+    <h2>📦 Daily Report</h2>
+
+    <select id="weekSelect">
+      <option>Week 1</option>
+      <option>Week 2</option>
+      <option>Week 3</option>
+    </select>
+
+    <textarea id="industry" placeholder="Industry..."></textarea>
+    <textarea id="business" placeholder="Business..."></textarea>
+    <textarea id="growth" placeholder="Growth..."></textarea>
+
+    <button onclick="save()">Save</button>
+    <button onclick="load()">Load</button>
+  </div>
+
+  <div id="list"></div>
+
+  <div class="card">
+    <h3>📊 Radar Chart</h3>
+    <canvas id="chart"></canvas>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+/* 🔥 FIREBASE CONFIG (ӨӨРИЙНХӨӨ СОЛИНО) */
+const firebaseConfig = {
+  apiKey: "YOUR_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* LOGIN */
+window.login = function(){
+  if(document.getElementById('pass').value==="1234"){
+    login.style.display="none";
+    app.style.display="block";
+  } else alert("wrong password");
+}
+
+/* SAVE */
+window.save = async function(){
+  const week = weekSelect.value;
+
+  await addDoc(collection(db,"reports"),{
+    industry:industry.value,
+    business:business.value,
+    growth:growth.value,
+    week:week,
+    reviewed:false,
+    comment:"",
+    time:Date.now()
+  });
+
+  alert("saved");
+}
+
+/* LOAD + FILTER */
+window.load = async function(){
+  const selectedWeek = weekSelect.value;
+  const q = await getDocs(collection(db,"reports"));
+
+  list.innerHTML = "";
+
+  q.forEach(docSnap=>{
+    const data = docSnap.data();
+
+    if(data.week !== selectedWeek) return;
+
+    const div = document.createElement("div");
+    div.className="card";
+
+    div.innerHTML = `
+      <p><b>Industry:</b> ${data.industry}</p>
+      <p><b>Business:</b> ${data.business}</p>
+      <p><b>Growth:</b> ${data.growth}</p>
+      <p>Status: ${data.reviewed ? "✅ Reviewed" : "❌ Not reviewed"}</p>
+
+      <textarea id="c-${docSnap.id}" placeholder="Mentor comment">${data.comment || ""}</textarea>
+      <button onclick="review('${docSnap.id}')">Review</button>
+    `;
+
+    list.appendChild(div);
+  });
+}
+
+/* REVIEW */
+window.review = async function(id){
+  const comment = document.getElementById(c-${id}).value;
+
+  await updateDoc(doc(db,"reports",id),{
+    reviewed:true,
+    comment:comment
+  });
+
+  alert("Reviewed!");
+  load();
+}
+
+/* CHART */
+import "https://cdn.jsdelivr.net/npm/chart.js";
+
+setTimeout(()=>{
+const ctx=document.getElementById('chart');
+
+new Chart(ctx,{
+  type:'radar',
+  data:{
+    labels:['Industry','Business','Growth'],
+    datasets:[{
+      label:'Skill',
+      data:[3,4,5]
+    }]
+  }
+});
+},1000);
+
+</script>
+
+</body>
+</html>
+
