@@ -2,227 +2,544 @@
 <html lang="mn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Mentorship System</title>
-
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <style>
-body{
-  margin:0;
-  font-family:sans-serif;
-  background:#0f172a;
-  color:white;
+:root {
+  --bg: #060910;
+  --card: #0d1220;
+  --card2: #111827;
+  --border: rgba(255,255,255,0.07);
+  --accent: #4f8ef7;
+  --accent2: #34d399;
+  --accent3: #f59e0b;
+  --text: #f0f4ff;
+  --dim: #6b7a99;
+  --red: #f87171;
 }
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow-x:hidden;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);padding-bottom:90px;padding-top:64px;}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 20% 10%, rgba(79,142,247,0.08) 0%, transparent 60%),
+             radial-gradient(ellipse 60% 50% at 80% 80%, rgba(52,211,153,0.06) 0%, transparent 60%);
+}
+#app{position:relative;z-index:1;}
 
-#loginScreen{
-  position:fixed;
-  inset:0;
-  background:black;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  z-index: 100;
-}
+/* LOGIN */
+#loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;justify-content:center;align-items:center;z-index:1000;}
+.login-wrap{width:88%;max-width:360px;background:var(--card);border:1px solid var(--border);border-radius:28px;padding:44px 32px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,0.6);animation:fadeUp 0.5s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.login-icon{font-size:44px;margin-bottom:20px;filter:drop-shadow(0 0 20px rgba(79,142,247,0.4));}
+.login-wrap h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px;}
+.login-wrap p{color:var(--dim);font-size:13px;margin-bottom:28px;}
+.login-wrap input{width:100%;padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:#080d18;color:var(--text);font-size:15px;margin-bottom:14px;font-family:'DM Sans',sans-serif;transition:border-color 0.2s;}
+.login-wrap input:focus{outline:none;border-color:var(--accent);}
+.btn-primary{width:100%;padding:15px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--accent),#6c63ff);color:#fff;font-weight:700;font-size:15px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity 0.2s,transform 0.1s;}
+.btn-primary:active{transform:scale(0.97);}
+.login-error{color:var(--red);font-size:13px;margin-top:10px;display:none;}
 
-.login-box{
-  background:rgba(255,255,255,0.1);
-  padding:30px;
-  border-radius:20px;
-  backdrop-filter:blur(10px);
-  text-align: center;
+/* ROLE PICK */
+.role-pick{
+  border:1.5px solid var(--border);border-radius:16px;padding:18px 12px;
+  text-align:center;cursor:pointer;background:rgba(255,255,255,0.03);
+  transition:border-color 0.2s,background 0.2s;
 }
+.role-pick:hover{border-color:var(--accent);background:rgba(79,142,247,0.06);}
+.role-pick.selected.mentor{border-color:#4f8ef7;background:rgba(79,142,247,0.12);}
+.role-pick.selected.mentee{border-color:#34d399;background:rgba(52,211,153,0.12);}
 
-.card{
-  background:rgba(255,255,255,0.05);
-  padding:20px;
-  border-radius:20px;
-  margin:20px;
-}
+/* HEADER */
+.top-header{padding:52px 20px 16px;display:flex;justify-content:space-between;align-items:flex-start;}
+.top-header h1{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;line-height:1.2;}
+.top-header span{color:var(--dim);font-size:13px;display:block;margin-top:3px;}
+.avatar-btn{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#6c63ff);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:16px;cursor:pointer;flex-shrink:0;border:none;color:#fff;}
 
-textarea, select, input{
-  width:100%;
-  margin-bottom:10px;
-  padding:10px;
-  border-radius:10px;
-  box-sizing: border-box;
+/* TOP NAV BAR */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;padding-top:max(14px,env(safe-area-inset-top));
+  background:rgba(6,9,16,0.85);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
 }
+.topbar-logo{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;letter-spacing:0.5px;}
+.hamburger{width:38px;height:38px;border:none;background:rgba(255,255,255,0.06);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);font-size:16px;}
 
-button{
-  padding:10px 20px;
-  margin:5px;
-  border:none;
-  border-radius:10px;
-  background:#3b82f6;
-  color:white;
-  cursor:pointer;
+/* DRAWER */
+.drawer-overlay{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);
+  opacity:0;pointer-events:none;transition:opacity 0.3s;
 }
+.drawer-overlay.open{opacity:1;pointer-events:all;}
 
-button:hover{
-  background:#2563eb;
+.drawer{
+  position:fixed;left:0;top:0;bottom:0;z-index:400;
+  width:82%;max-width:300px;
+  background:#0a0f1e;border-right:1px solid var(--border);
+  transform:translateX(-100%);transition:transform 0.32s cubic-bezier(0.4,0,0.2,1);
+  display:flex;flex-direction:column;overflow-y:auto;
 }
+.drawer.open{transform:translateX(0);}
+.drawer-head{
+  padding:52px 22px 22px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.drawer-close{
+  width:34px;height:34px;border-radius:50%;border:1px solid var(--border);
+  background:rgba(255,255,255,0.04);cursor:pointer;color:var(--dim);font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+}
+.drawer-section{padding:18px 22px 6px;}
+.drawer-section-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:10px;font-weight:600;}
+.drawer-item{
+  display:flex;align-items:center;gap:14px;
+  padding:12px 14px;border-radius:14px;
+  cursor:pointer;color:var(--text);font-size:14px;font-weight:500;
+  transition:background 0.15s;margin-bottom:2px;
+  border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif;
+}
+.drawer-item:hover{background:rgba(255,255,255,0.05);}
+.drawer-item.active{background:rgba(79,142,247,0.12);color:var(--accent);}
+.drawer-item i{width:20px;text-align:center;font-size:15px;opacity:0.8;}
+
+/* PAGES */
+.page{display:none;animation:fadeIn 0.3s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:22px;margin:0 16px 16px;padding:22px;}
+.card-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+
+/* PROFILE SECTION */
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 16px 16px;}
+.profile-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px 14px;text-align:center;}
+.p-avatar-wrap{position:relative;width:60px;margin:0 auto 10px;cursor:pointer;}
+.p-avatar{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:20px;overflow:hidden;}
+.p-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.p-avatar-edit{position:absolute;bottom:0;right:0;width:20px;height:20px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;border:2px solid var(--bg);}
+.p-role{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:6px;opacity:0.6;}
+
+/* PROGRESS BAR */
+.pb-label{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-bottom:7px;margin-top:14px;}
+.pb-track{height:5px;background:rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;}
+.pb-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 0.6s ease;}
+
+/* ACTIONS */
+.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 16px 16px;}
+.qa-btn{padding:16px 12px;border-radius:16px;border:1px solid var(--border);background:var(--card);cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif;transition:border-color 0.2s;}
+.qa-btn:hover{border-color:var(--accent);}
+.qa-btn i{font-size:20px;margin-bottom:8px;display:block;}
+.qa-btn span{font-size:13px;font-weight:500;display:block;color:var(--text);}
+.qa-btn small{font-size:11px;color:var(--dim);}
+
+/* DAY STRIP */
+.day-strip{display:flex;gap:7px;padding:0 16px;margin-bottom:18px;overflow-x:auto;scrollbar-width:none;}
+.day-strip::-webkit-scrollbar{display:none;}
+.day-pill{flex-shrink:0;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;font-family:'Syne',sans-serif;border:1.5px solid var(--border);color:var(--dim);background:var(--card);cursor:pointer;transition:all 0.18s;}
+.day-pill.active{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,0.12);}
+.day-pill.has-data::after{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:currentColor;margin-left:5px;vertical-align:middle;opacity:0.8;}
+
+/* QUADRANT */
+.quadrant-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 16px 14px;}
+.quad{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;}
+.quad-label{font-size:10px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:8px;}
+.quad textarea{width:100%;resize:none;min-height:85px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;padding:9px 10px;font-family:'DM Sans',sans-serif;line-height:1.55;transition:border-color 0.2s;}
+.quad textarea:focus{outline:none;border-color:var(--accent);}
+
+/* TASKS */
+.task-row{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+.task-row input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:var(--accent2);flex-shrink:0;}
+.task-row input[type=text]{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;padding:9px 12px;font-family:'DM Sans',sans-serif;}
+.add-task{width:100%;padding:8px;border:1.5px dashed rgba(255,255,255,0.1);border-radius:10px;background:none;color:var(--dim);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;padding-left:12px;}
+
+/* HISTORY ITEMS */
+.hist-item{margin:0 16px 12px;}
+.hist-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;}
+.hist-day{display:flex;align-items:center;gap:10px;margin-bottom:14px;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;}
+.day-dot{width:10px;height:10px;border-radius:50%;}
+.hist-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.hq{background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;}
+.hq-label{font-size:10px;color:var(--dim);margin-bottom:4px;text-transform:uppercase;}
+.hq-val{font-size:12px;color:var(--text);line-height:1.5;}
+
+/* PORTFOLIO */
+.porto-add-row{display:flex;gap:8px;margin:0 16px 14px;flex-wrap:wrap;}
+.porto-add-row input{flex:1;min-width:0;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px;}
+.tag-filters{display:flex;gap:7px;padding:0 16px;margin-bottom:16px;overflow-x:auto;}
+.tf{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--border);color:var(--dim);background:var(--card);cursor:pointer;}
+.tf.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.porto-item{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px 18px;margin:0 16px 10px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+
+/* MEETINGS */
+.meet-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:12px;}
+.meet-imgs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.meet-img{width:80px;height:80px;border-radius:10px;object-fit:cover;border:1px solid var(--border);}
+.audio-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;}
+.audio-item audio{flex:1;height:32px;}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(13,18,32,0.92);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:12px 0 28px;}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;padding:4px 12px;color:var(--dim);font-family:'DM Sans',sans-serif;}
+.nav-btn.active{color:var(--accent);}
+.nav-btn i{font-size:20px;}
+.nav-btn span{font-size:10px;font-weight:500;}
+
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;}
+.lightbox.open{display:flex;}
+.lightbox img{max-width:95%;max-height:90vh;border-radius:12px;}
+
+.save-btn{padding:11px 26px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),#6c63ff);color:#fff;font-weight:700;font-size:14px;cursor:pointer;}
+.status-txt{font-size:12px;color:var(--accent2);}
+.empty{text-align:center;padding:48px 20px;color:var(--dim);font-size:13px;}
 </style>
 </head>
-
 <body>
 
 <div id="loginScreen">
-  <div class="login-box">
-    <h2>Login</h2>
-    <input type="password" id="pass" placeholder="Password">
-    <button onclick="loginApp()">Enter</button>
+  <div class="login-wrap">
+    <div class="login-icon">💎</div>
+    <h2>Mentorship System</h2>
+    <p id="login-sub">Та хэн гэж нэвтрэх вэ?</p>
+    <div id="role-select" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+      <div class="role-pick" id="pick-mentor" onclick="pickRole('mentor')">
+        <div style="font-size:28px;margin-bottom:8px;">🎓</div>
+        <div style="font-size:14px;font-weight:700;font-family:'Syne',sans-serif;">Ментор</div>
+      </div>
+      <div class="role-pick" id="pick-mentee" onclick="pickRole('mentee')">
+        <div style="font-size:28px;margin-bottom:8px;">📝</div>
+        <div style="font-size:14px;font-weight:700;font-family:'Syne',sans-serif;">Оролцогч</div>
+      </div>
+    </div>
+    <div id="pass-section" style="display:none;">
+      <input type="password" id="pass" placeholder="Нууц үг">
+      <button class="btn-primary" onclick="loginApp()">Нэвтрэх</button>
+    </div>
+    <div class="login-error" id="loginErr">Нууц үг буруу байна!</div>
   </div>
 </div>
 
-<div id="appContainer" style="display:none">
-
-  <div class="card">
-    <h2>📦 Daily Report</h2>
-
-    <select id="weekSelect">
-      <option>Week 1</option>
-      <option>Week 2</option>
-      <option>Week 3</option>
-    </select>
-
-    <textarea id="industry" placeholder="Industry..."></textarea>
-    <textarea id="business" placeholder="Business..."></textarea>
-    <textarea id="growth" placeholder="Growth..."></textarea>
-
-    <button onclick="saveReport()">Save</button>
-    <button onclick="loadReports()">Load</button>
+<div id="app" style="display:none;">
+  <div class="topbar">
+    <button class="hamburger" onclick="openDrawer()"><i class="fas fa-bars"></i></button>
+    <div class="topbar-logo">Mentorship</div>
+    <div class="avatar-btn" id="avatarBtn">М</div>
   </div>
 
-  <div id="list"></div>
-
-  <div class="card">
-    <h3>📊 Radar Chart</h3>
-    <canvas id="chart"></canvas>
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-head">
+      <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;">Mentorship</div>
+      <button class="drawer-close" onclick="closeDrawer()">×</button>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-label">Цэс</div>
+      <button class="drawer-item active" onclick="goPage('home');closeDrawer()"><i class="fas fa-house"></i> Нүүр</button>
+      <button class="drawer-item" onclick="goPage('report');closeDrawer()"><i class="fas fa-pen-nib"></i> Daily Report</button>
+      <button class="drawer-item" onclick="goPage('history');closeDrawer()"><i class="fas fa-clock-rotate-left"></i> Түүх</button>
+      <button class="drawer-item" onclick="goPage('portfolio');closeDrawer()"><i class="fas fa-layer-group"></i> Portfolio</button>
+      <button class="drawer-item" onclick="goPage('stats');closeDrawer()"><i class="fas fa-camera"></i> Уулзалт</button>
+    </div>
   </div>
 
+  <div class="page active" id="page-home">
+    <div class="top-header">
+      <h1 id="greeting">Сайн уу 👋</h1>
+    </div>
+    <div class="profile-grid">
+      <div class="profile-card">
+        <div class="p-avatar" id="mentor-av" style="background:rgba(79,142,247,0.15);color:var(--accent);">М</div>
+        <div class="p-role">Mentor</div>
+        <div id="pub-mentor-name" style="font-weight:700;">—</div>
+      </div>
+      <div class="profile-card">
+        <div class="p-avatar" id="mentee-av" style="background:rgba(52,211,153,0.15);color:var(--accent2);">О</div>
+        <div class="p-role">Mentee</div>
+        <div id="pub-mentee-name" style="font-weight:700;">—</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="pb-label"><span>Нийт явц</span><span id="prog-pct">0</span></div>
+      <div class="pb-track"><div class="pb-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+    <div class="quick-actions">
+      <button class="qa-btn" onclick="goPage('report')"><i class="fas fa-pen-nib" style="color:var(--accent);"></i><span>Report</span></button>
+      <button class="qa-btn" onclick="goPage('stats')"><i class="fas fa-camera" style="color:#a78bfa;"></i><span>Meeting</span></button>
+    </div>
+  </div>
+
+  <div class="page" id="page-report">
+    <div class="top-header"><h1>Daily Report</h1></div>
+    <div class="day-strip" id="day-strip"></div>
+    <div class="card">
+      <div class="card-title">Даалгавар</div>
+      <div id="task-list"></div>
+      <button class="add-task" onclick="addTask()">+ Нэмэх</button>
+    </div>
+    <div class="quadrant-grid">
+      <div class="quad"><div class="quad-label" style="color:#4f8ef7;">Салбар</div><textarea id="q-industry"></textarea></div>
+      <div class="quad"><div class="quad-label" style="color:#34d399;">Бизнес</div><textarea id="q-business"></textarea></div>
+      <div class="quad"><div class="quad-label" style="color:#f59e0b;">Өсөлт</div><textarea id="q-personal"></textarea></div>
+      <div class="quad"><div class="quad-label" style="color:#a78bfa;">Тэмдэглэл</div><textarea id="q-notes"></textarea></div>
+    </div>
+    <div style="padding:0 16px; display:flex; justify-content:space-between; align-items:center;">
+      <span class="status-txt" id="status-msg"></span>
+      <button class="save-btn" onclick="saveReport()">Хадгалах</button>
+    </div>
+  </div>
+
+  <div class="page" id="page-history">
+    <div class="top-header"><h1>Тайлангийн түүх</h1></div>
+    <div id="history-list"></div>
+  </div>
+
+  <div class="page" id="page-portfolio">
+    <div class="top-header"><h1>Portfolio</h1></div>
+    <div class="porto-add-row">
+      <input id="porto-input" placeholder="Ажлын нэр...">
+      <select id="porto-tag" style="padding:12px; border-radius:12px; background:var(--card); color:white; border:1px solid var(--border);">
+        <option value="дизайн">Дизайн</option>
+        <option value="судалгаа">Судалгаа</option>
+      </select>
+      <button class="save-btn" onclick="addPorto()">Нэмэх</button>
+    </div>
+    <div id="porto-list"></div>
+  </div>
+
+  <div class="page" id="page-stats">
+    <div class="top-header"><h1>Уулзалтууд</h1></div>
+    <div class="card">
+      <input type="date" id="meet-date" style="width:100%; padding:12px; border-radius:12px; background:var(--card); color:white; border:1px solid var(--border); margin-bottom:10px;">
+      <textarea id="meet-note" placeholder="Тэмдэглэл..." style="width:100%; min-height:80px; padding:12px; border-radius:12px; background:var(--card); color:white; border:1px solid var(--border); margin-bottom:10px;"></textarea>
+      <div id="img-previews" class="meet-imgs"></div>
+      <div style="display:flex; gap:10px;">
+        <button class="save-btn" style="flex:1;" onclick="document.getElementById('meet-img-input').click()">Зураг</button>
+        <input type="file" id="meet-img-input" accept="image/*" multiple style="display:none" onchange="addMeetImages(this)">
+        <button class="save-btn" style="flex:1;" onclick="saveMeeting()">Хадгалах</button>
+      </div>
+    </div>
+    <div id="meet-feed" style="padding:0 16px;"></div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-home" onclick="goPage('home')"><i class="fas fa-house"></i><span>Нүүр</span></button>
+    <button class="nav-btn" id="nav-report" onclick="goPage('report')"><i class="fas fa-pen-nib"></i><span>Report</span></button>
+    <button class="nav-btn" id="nav-history" onclick="goPage('history')"><i class="fas fa-clock-rotate-left"></i><span>Түүх</span></button>
+    <button class="nav-btn" id="nav-portfolio" onclick="goPage('portfolio')"><i class="fas fa-layer-group"></i><span>Portfolio</span></button>
+    <button class="nav-btn" id="nav-stats" onclick="goPage('stats')"><i class="fas fa-camera"></i><span>Уулзалт</span></button>
+  </nav>
 </div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()"><img id="lightbox-img" src=""></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-/* 🔥 FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyB8OgrYt4vvC92Gu-MFzMY5khZDLHeqneY",
   authDomain: "goz44-2e14c.firebaseapp.com",
   projectId: "goz44-2e14c",
   storageBucket: "goz44-2e14c.firebasestorage.app",
   messagingSenderId: "819051445534",
-  appId: "1:819051445534:web:b6afa5ca388b16f4975d0f",
-  measurementId: "G-MTVJ35E06H"
+  appId: "1:819051445534:web:b6afa5ca388b16f4975d0f"
+};
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+
+const DAYS = [
+  {key:'mon',label:'Даваа',color:'#4f8ef7'},
+  {key:'tue',label:'Мягмар',color:'#34d399'},
+  {key:'wed',label:'Лхагва',color:'#a78bfa'},
+  {key:'thu',label:'Пүрэв',color:'#f59e0b'},
+  {key:'fri',label:'Баасан',color:'#f87171'},
+  {key:'sat',label:'Бямба',color:'#fb923c'},
+  {key:'sun',label:'Ням',color:'#94a3b8'},
+];
+
+let currentDay = null;
+let reports = {}, tasks = {}, portfolio = [], meetings = [], currentRole = null;
+let pendingImgs = [];
+
+window.pickRole = function(role) {
+  currentRole = role;
+  document.getElementById('role-select').style.display = 'none';
+  document.getElementById('pass-section').style.display = 'block';
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-/* LOGIN */
-window.loginApp = function(){
-  const password = document.getElementById('pass').value;
-  if(password === "1234"){
-    document.getElementById('loginScreen').style.display = "none";
-    document.getElementById('appContainer').style.display = "block";
-    initChart();
+window.loginApp = function() {
+  const pass = document.getElementById('pass').value;
+  if ((currentRole === 'mentor' && pass === 'mentor1234') || (currentRole === 'mentee' && pass === '1234')) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    init();
   } else {
-    alert("Wrong password!");
+    document.getElementById('loginErr').style.display = 'block';
   }
+};
+
+function init() {
+  reports = JSON.parse(localStorage.getItem('mr7')||'{}');
+  tasks = JSON.parse(localStorage.getItem('mt7')||'{}');
+  portfolio = JSON.parse(localStorage.getItem('mp7')||'[]');
+  meetings = JSON.parse(localStorage.getItem('mm7')||'[]');
+  updateProgress();
+  renderMeetFeed();
 }
 
-/* SAVE */
-window.saveReport = async function(){
-  try {
-    const week = document.getElementById('weekSelect').value;
-    const ind = document.getElementById('industry').value;
-    const bus = document.getElementById('business').value;
-    const gro = document.getElementById('growth').value;
+window.goPage = function(p) {
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.getElementById('nav-'+p).classList.add('active');
+  if(p==='report') renderDayStrip();
+  if(p==='history') renderHistory();
+  if(p==='portfolio') renderPortfolio();
+};
 
-    await addDoc(collection(db, "reports"), {
-      industry: ind,
-      business: bus,
-      growth: gro,
-      week: week,
-      reviewed: false,
-      comment: "",
-      time: Date.now()
-    });
+window.openDrawer = () => { document.getElementById('drawer').classList.add('open'); document.getElementById('drawerOverlay').classList.add('open'); };
+window.closeDrawer = () => { document.getElementById('drawer').classList.remove('open'); document.getElementById('drawerOverlay').classList.remove('open'); };
 
-    alert("Saved successfully!");
-    document.getElementById('industry').value = "";
-    document.getElementById('business').value = "";
-    document.getElementById('growth').value = "";
-  } catch (e) {
-    console.error("Error saving: ", e);
-    alert("Error saving report");
-  }
-}
-
-/* LOAD */
-window.loadReports = async function(){
-  const selectedWeek = document.getElementById('weekSelect').value;
-  const listDiv = document.getElementById('list');
-  const q = await getDocs(collection(db, "reports"));
-
-  listDiv.innerHTML = "";
-
-  q.forEach(docSnap => {
-    const data = docSnap.data();
-    if(data.week !== selectedWeek) return;
-
-    const div = document.createElement("div");
-    div.className = "card";
-    div.innerHTML = `
-      <p><b>Industry:</b> ${data.industry}</p>
-      <p><b>Business:</b> ${data.business}</p>
-      <p><b>Growth:</b> ${data.growth}</p>
-      <p>Status: ${data.reviewed ? "✅ Reviewed" : "❌ Not reviewed"}</p>
-      <textarea id="c-${docSnap.id}" placeholder="Mentor comment">${data.comment || ""}</textarea>
-      <button onclick="reviewReport('${docSnap.id}')">Review</button>
-    `;
-    listDiv.appendChild(div);
+/* REPORT LOGIC */
+function renderDayStrip() {
+  const c = document.getElementById('day-strip'); c.innerHTML = '';
+  DAYS.forEach(d => {
+    const b = document.createElement('button');
+    b.className = 'day-pill' + (currentDay === d.key ? ' active' : '') + (reports[d.key] ? ' has-data' : '');
+    b.textContent = d.label;
+    b.onclick = () => selectDay(d.key);
+    c.appendChild(b);
   });
 }
 
-/* REVIEW */
-window.reviewReport = async function(id){
-  const commentValue = document.getElementById(`c-${id}`).value;
-  await updateDoc(doc(db, "reports", id), {
-    reviewed: true,
-    comment: commentValue
-  });
-  alert("Reviewed!");
-  loadReports();
+function selectDay(key) {
+  currentDay = key;
+  const r = reports[key]||{};
+  document.getElementById('q-industry').value = r.industry||'';
+  document.getElementById('q-business').value = r.business||'';
+  document.getElementById('q-personal').value = r.personal||'';
+  document.getElementById('q-notes').value = r.notes||'';
+  renderTaskList(key);
+  renderDayStrip();
 }
 
-/* CHART */
-import "https://cdn.jsdelivr.net/npm/chart.js";
-
-function initChart() {
-  const ctx = document.getElementById('chart');
-  new Chart(ctx, {
-    type: 'radar',
-    data: {
-      labels: ['Industry', 'Business', 'Growth'],
-      datasets: [{
-        label: 'Skill Level',
-        data: [3, 4, 5],
-        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-        borderColor: '#3b82f6',
-        color: '#fff'
-      }]
-    },
-    options: {
-      scales: {
-        r: {
-          grid: { color: 'rgba(255,255,255,0.1)' },
-          pointLabels: { color: '#fff' }
-        }
-      }
-    }
+function renderTaskList(key) {
+  const list = document.getElementById('task-list'); list.innerHTML = '';
+  (tasks[key]||[]).forEach((t, i) => {
+    const row = document.createElement('div'); row.className = 'task-row';
+    row.innerHTML = `<input type="checkbox" ${t.done?'checked':''}> <input type="text" value="${t.text}">`;
+    list.appendChild(row);
   });
+}
+
+window.addTask = () => {
+  const row = document.createElement('div'); row.className = 'task-row';
+  row.innerHTML = `<input type="checkbox"> <input type="text" placeholder="Шинэ даалгавар...">`;
+  document.getElementById('task-list').appendChild(row);
+};
+
+window.saveReport = async function() {
+  if(!currentDay) return;
+  const currentTasks = Array.from(document.querySelectorAll('.task-row')).map(r => ({
+    text: r.querySelector('input[type=text]').value,
+    done: r.querySelector('input[type=checkbox]').checked
+  }));
+  reports[currentDay] = {
+    industry: document.getElementById('q-industry').value,
+    business: document.getElementById('q-business').value,
+    personal: document.getElementById('q-personal').value,
+    notes: document.getElementById('q-notes').value
+  };
+  tasks[currentDay] = currentTasks;
+  localStorage.setItem('mr7', JSON.stringify(reports));
+  localStorage.setItem('mt7', JSON.stringify(tasks));
+  document.getElementById('status-msg').textContent = 'Хадгалагдлаа!';
+  updateProgress();
+};
+
+/* HISTORY */
+function renderHistory() {
+  const list = document.getElementById('history-list'); list.innerHTML = '';
+  DAYS.forEach(d => {
+    const r = reports[d.key]; if(!r) return;
+    const el = document.createElement('div'); el.className = 'hist-item';
+    el.innerHTML = `<div class="hist-card">
+      <div class="hist-day"><span class="day-dot" style="background:${d.color}"></span>${d.label}</div>
+      <div class="hist-grid">
+        <div class="hq"><div class="hq-label">Салбар</div><div class="hq-val">${r.industry}</div></div>
+        <div class="hq"><div class="hq-label">Бизнес</div><div class="hq-val">${r.business}</div></div>
+      </div>
+    </div>`;
+    list.appendChild(el);
+  });
+}
+
+/* PORTFOLIO */
+window.addPorto = function() {
+  const title = document.getElementById('porto-input').value;
+  const tag = document.getElementById('porto-tag').value;
+  if(!title) return;
+  portfolio.push({title, tag, id: Date.now()});
+  localStorage.setItem('mp7', JSON.stringify(portfolio));
+  renderPortfolio();
+};
+
+function renderPortfolio() {
+  const list = document.getElementById('porto-list'); list.innerHTML = '';
+  portfolio.forEach(p => {
+    const el = document.createElement('div'); el.className = 'porto-item';
+    el.innerHTML = `<div><b>${p.title}</b><br><small>${p.tag}</small></div>`;
+    list.appendChild(el);
+  });
+}
+
+/* MEETINGS */
+window.addMeetImages = function(inp) {
+  Array.from(inp.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      pendingImgs.push(e.target.result);
+      const img = document.createElement('img'); img.src = e.target.result; img.className = 'meet-img';
+      document.getElementById('img-previews').appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
+window.saveMeeting = function() {
+  const date = document.getElementById('meet-date').value;
+  const note = document.getElementById('meet-note').value;
+  meetings.unshift({date, note, imgs: [...pendingImgs], id: Date.now()});
+  localStorage.setItem('mm7', JSON.stringify(meetings));
+  pendingImgs = []; document.getElementById('img-previews').innerHTML = '';
+  renderMeetFeed();
+};
+
+function renderMeetFeed() {
+  const feed = document.getElementById('meet-feed'); feed.innerHTML = '';
+  meetings.forEach(m => {
+    const el = document.createElement('div'); el.className = 'meet-card';
+    el.innerHTML = `<b>${m.date}</b><p>${m.note}</p><div class="meet-imgs">${m.imgs.map(i=>`<img src="${i}" class="meet-img" onclick="openLightbox('${i}')">`).join('')}</div>`;
+    feed.appendChild(el);
+  });
+}
+
+window.openLightbox = (s) => { document.getElementById('lightbox-img').src = s; document.getElementById('lightbox').classList.add('open'); };
+window.closeLightbox = () => { document.getElementById('lightbox').classList.remove('open'); };
+
+function updateProgress() {
+  const count = Object.keys(reports).length;
+  const pct = Math.min((count/7)*100, 100);
+  document.getElementById('prog-pct').textContent = count + ' өдөр';
+  document.getElementById('prog-fill').style.width = pct + '%';
 }
 </script>
-
 </body>
 </html>
