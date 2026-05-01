@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mentorship System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #060910;
+  --card: #0d1220;
+  --card2: #111827;
+  --border: rgba(255,255,255,0.07);
+  --accent: #4f8ef7;
+  --accent2: #34d399;
+  --accent3: #f59e0b;
+  --text: #f0f4ff;
+  --dim: #6b7a99;
+  --red: #f87171;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow-x:hidden;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);padding-bottom:90px;padding-top:64px;}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 20% 10%, rgba(79,142,247,0.08) 0%, transparent 60%),
+             radial-gradient(ellipse 60% 50% at 80% 80%, rgba(52,211,153,0.06) 0%, transparent 60%);
+}
+#app{position:relative;z-index:1;}
+
+/* LOGIN */
+#loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;justify-content:center;align-items:center;z-index:1000;}
+.login-wrap{width:88%;max-width:360px;background:var(--card);border:1px solid var(--border);border-radius:28px;padding:44px 32px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,0.6);animation:fadeUp 0.5s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.login-icon{font-size:44px;margin-bottom:20px;filter:drop-shadow(0 0 20px rgba(79,142,247,0.4));}
+.login-wrap h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px;}
+.login-wrap p{color:var(--dim);font-size:13px;margin-bottom:28px;}
+.login-wrap input{width:100%;padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:#080d18;color:var(--text);font-size:15px;margin-bottom:14px;font-family:'DM Sans',sans-serif;transition:border-color 0.2s;}
+.login-wrap input:focus{outline:none;border-color:var(--accent);}
+.btn-primary{width:100%;padding:15px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--accent),#6c63ff);color:#fff;font-weight:700;font-size:15px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity 0.2s,transform 0.1s;}
+.btn-primary:active{transform:scale(0.97);}
+.login-error{color:var(--red);font-size:13px;margin-top:10px;display:none;}
+
+/* ROLE PICK */
+.role-pick{
+  border:1.5px solid var(--border);border-radius:16px;padding:18px 10px;
+  text-align:center;cursor:pointer;transition:all 0.2s;
+  background:rgba(255,255,255,0.02);
+}
+.role-pick:hover{border-color:var(--accent);background:rgba(79,142,247,0.06);}
+.role-pick.selected.mentor{border-color:#4f8ef7;background:rgba(79,142,247,0.12);}
+.role-pick.selected.mentee{border-color:#34d399;background:rgba(52,211,153,0.12);}
+.role-pick{
+  border:1.5px solid var(--border);border-radius:16px;padding:18px 12px;
+  text-align:center;cursor:pointer;background:rgba(255,255,255,0.03);
+  transition:border-color 0.2s,background 0.2s;
+}
+.role-pick:hover{border-color:var(--accent);background:rgba(79,142,247,0.06);}
+.role-pick.selected.mentor{border-color:#4f8ef7;background:rgba(79,142,247,0.1);}
+.role-pick.selected.mentee{border-color:#34d399;background:rgba(52,211,153,0.1);}
+
+/* HEADER */
+.top-header{padding:52px 20px 16px;display:flex;justify-content:space-between;align-items:flex-start;}
+.top-header h1{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;line-height:1.2;}
+.top-header span{color:var(--dim);font-size:13px;display:block;margin-top:3px;}
+.avatar-btn{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#6c63ff);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:16px;cursor:pointer;flex-shrink:0;border:none;color:#fff;}
+
+/* TOP NAV BAR */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;padding-top:max(14px,env(safe-area-inset-top));
+  background:rgba(6,9,16,0.85);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.topbar-logo{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;letter-spacing:0.5px;}
+.hamburger{width:38px;height:38px;border:none;background:rgba(255,255,255,0.06);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);font-size:16px;}
+
+/* DRAWER OVERLAY */
+.drawer-overlay{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);
+  opacity:0;pointer-events:none;transition:opacity 0.3s;
+}
+.drawer-overlay.open{opacity:1;pointer-events:all;}
+
+/* DRAWER */
+.drawer{
+  position:fixed;left:0;top:0;bottom:0;z-index:400;
+  width:82%;max-width:300px;
+  background:#0a0f1e;border-right:1px solid var(--border);
+  transform:translateX(-100%);transition:transform 0.32s cubic-bezier(0.4,0,0.2,1);
+  display:flex;flex-direction:column;overflow-y:auto;
+  padding-bottom:40px;
+}
+.drawer.open{transform:translateX(0);}
+.drawer-head{
+  padding:52px 22px 22px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.drawer-close{
+  width:34px;height:34px;border-radius:50%;border:1px solid var(--border);
+  background:rgba(255,255,255,0.04);cursor:pointer;color:var(--dim);font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+}
+.drawer-section{padding:18px 22px 6px;}
+.drawer-section-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:10px;font-weight:600;}
+.drawer-item{
+  display:flex;align-items:center;gap:14px;
+  padding:12px 14px;border-radius:14px;
+  cursor:pointer;color:var(--text);font-size:14px;font-weight:500;
+  transition:background 0.15s;margin-bottom:2px;
+  border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif;
+}
+.drawer-item:hover{background:rgba(255,255,255,0.05);}
+.drawer-item.active{background:rgba(79,142,247,0.12);color:var(--accent);}
+.drawer-item i{width:20px;text-align:center;font-size:15px;opacity:0.8;}
+.drawer-divider{height:1px;background:var(--border);margin:8px 22px;}
+.drawer-contact{padding:14px 22px;font-size:13px;color:var(--dim);}
+.drawer-contact a{color:var(--accent);text-decoration:none;}
+
+/* PAGES */
+.page{display:none;animation:fadeIn 0.3s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:22px;margin:0 16px 16px;padding:22px;}
+.card-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+.card-title i{font-size:15px;opacity:0.7;}
+
+/* HOME */
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 16px 16px;}
+.profile-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px 14px;text-align:center;}
+.p-avatar-wrap{position:relative;width:60px;margin:0 auto 10px;cursor:pointer;}
+.p-avatar{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:20px;overflow:hidden;transition:opacity 0.2s;}
+.p-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.p-avatar-wrap:hover .p-avatar{opacity:0.7;}
+.p-avatar-edit{position:absolute;bottom:0;right:0;width:20px;height:20px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;border:2px solid var(--bg);}
+.p-role{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:6px;opacity:0.6;}
+.p-name-input{width:100%;text-align:center;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:14px;font-weight:500;padding:4px 0;font-family:'DM Sans',sans-serif;}
+.p-name-input:focus{outline:none;border-bottom-color:var(--accent);}
+.week-circles{display:flex;gap:8px;justify-content:space-between;}
+.wc{flex:1;aspect-ratio:1;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--dim);}
+.wc.done{background:linear-gradient(135deg,var(--accent2),#059669);border-color:transparent;color:#fff;}
+.wc.current{border-color:var(--accent);color:var(--accent);}
+.wp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.wp-label{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;}
+.wp-count{font-size:12px;color:var(--dim);}
+.pb-label{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-bottom:7px;margin-top:14px;}
+.pb-track{height:5px;background:rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;}
+.pb-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 0.6s ease;}
+.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 16px 16px;}
+.qa-btn{padding:16px 12px;border-radius:16px;border:1px solid var(--border);background:var(--card);cursor:pointer;text-align:left;font-family:'DM Sans',sans-serif;transition:border-color 0.2s;}
+.qa-btn:hover{border-color:var(--accent);}
+.qa-btn i{font-size:20px;margin-bottom:8px;display:block;}
+.qa-btn span{font-size:13px;font-weight:500;display:block;color:var(--text);}
+.qa-btn small{font-size:11px;color:var(--dim);}
+
+/* DATE PICKER */
+.date-pick-btn{
+  width:100%;display:flex;align-items:center;gap:10px;
+  padding:13px 16px;border-radius:14px;
+  border:1px solid var(--border);background:var(--card);
+  color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;
+  cursor:pointer;transition:border-color 0.2s;
+}
+.date-pick-btn:hover,.date-pick-btn.has-date{border-color:var(--accent);}
+.date-pick-btn.has-date{background:rgba(79,142,247,0.08);}
+.cal-popup{display:none;margin-top:8px;background:var(--card2);border:1px solid var(--border);border-radius:18px;padding:16px;animation:fadeIn 0.2s ease;}
+.cal-popup.open{display:block;}
+.cal-nav{display:flex;align-items:center;gap:4px;margin-bottom:12px;}
+.cal-nav-btn{background:none;border:none;color:var(--dim);cursor:pointer;font-size:15px;padding:4px 8px;border-radius:8px;width:auto;}
+.cal-nav-btn:hover{background:rgba(255,255,255,0.06);color:var(--text);}
+.cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;margin-bottom:6px;}
+.cal-dow-row span{font-size:11px;color:var(--dim);padding:4px 0;}
+.cal-days-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;border-radius:8px;cursor:pointer;color:var(--dim);border:none;background:none;font-family:'DM Sans',sans-serif;transition:all 0.15s;position:relative;}
+.cal-day:hover{background:rgba(255,255,255,0.07);color:var(--text);}
+.cal-day.today{color:var(--accent);font-weight:700;}
+.cal-day.selected{background:var(--accent);color:#fff !important;font-weight:700;}
+.cal-day.has-report::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--accent2);}
+.cal-day.selected::after{background:#fff;}
+.cal-day.other-month{opacity:0.2;}
+
+/* REPORT */
+.day-strip{display:flex;gap:7px;padding:0 16px;margin-bottom:18px;overflow-x:auto;scrollbar-width:none;}
+.day-strip::-webkit-scrollbar{display:none;}
+.day-pill{flex-shrink:0;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;font-family:'Syne',sans-serif;border:1.5px solid var(--border);color:var(--dim);background:var(--card);cursor:pointer;transition:all 0.18s;}
+.day-pill.has-data::after{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:currentColor;margin-left:5px;vertical-align:middle;opacity:0.8;}
+.quadrant-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 16px 14px;}
+.quad{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;}
+.quad-label{font-size:10px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:8px;}
+.quad textarea{width:100%;resize:none;min-height:85px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;padding:9px 10px;font-family:'DM Sans',sans-serif;line-height:1.55;transition:border-color 0.2s;}
+.quad textarea:focus{outline:none;border-color:var(--accent);}
+.task-box{margin:0 16px 14px;}
+.task-row{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+.task-row input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:var(--accent2);flex-shrink:0;}
+.task-row input[type=text]{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;padding:9px 12px;font-family:'DM Sans',sans-serif;}
+.task-row input[type=text]:focus{outline:none;border-color:var(--accent);}
+.task-row .xbtn{width:24px;height:24px;border-radius:6px;border:none;background:none;cursor:pointer;color:var(--dim);font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.task-row .xbtn:hover{background:rgba(248,113,113,0.15);color:var(--red);}
+.add-task{width:100%;padding:8px;border:1.5px dashed rgba(255,255,255,0.1);border-radius:10px;background:none;color:var(--dim);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left;padding-left:12px;margin-top:2px;}
+.add-task:hover{border-color:var(--accent);color:var(--accent);}
+.action-row{display:flex;justify-content:space-between;align-items:center;padding:0 16px 6px;}
+.status-txt{font-size:12px;color:var(--accent2);}
+.save-btn{padding:11px 26px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),#6c63ff);color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.save-btn:active{transform:scale(0.97);}
+
+/* HISTORY */
+.hist-item{margin:0 16px 12px;}
+.hist-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;}
+.hist-day{display:flex;align-items:center;gap:10px;margin-bottom:14px;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;}
+.day-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.hist-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.hq{background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;}
+.hq-label{font-size:10px;color:var(--dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.7px;}
+.hq-val{font-size:12px;color:var(--text);line-height:1.5;white-space:pre-wrap;}
+.hist-tasks{margin-bottom:10px;}
+.ht-row{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--dim);margin-bottom:4px;}
+.ht-row.done-task{text-decoration:line-through;opacity:0.5;}
+.mentor-section{margin-top:12px;border-top:1px solid var(--border);padding-top:12px;}
+.mentor-comment-display{background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.2);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--text);line-height:1.5;margin-bottom:8px;}
+.mentor-reply-area textarea{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;padding:10px 12px;font-family:'DM Sans',sans-serif;resize:none;min-height:70px;}
+.mentor-reply-area textarea:focus{outline:none;border-color:var(--accent);}
+.btn-small{margin-top:7px;padding:9px 18px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:auto;}
+.reviewed-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:8px;background:rgba(52,211,153,0.15);color:var(--accent2);font-weight:600;}
+.pending-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:8px;background:rgba(245,158,11,0.15);color:var(--accent3);font-weight:600;}
+
+/* PORTFOLIO */
+.porto-add-row{display:flex;gap:8px;margin:0 16px 14px;flex-wrap:wrap;}
+.porto-add-row input{flex:1;min-width:0;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;}
+.porto-add-row input:focus{outline:none;border-color:var(--accent);}
+.porto-add-row select{padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;}
+.porto-add-row .add-btn{padding:12px 18px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent2),#059669);color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.tag-filters{display:flex;gap:7px;padding:0 16px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;}
+.tag-filters::-webkit-scrollbar{display:none;}
+.tf{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--border);color:var(--dim);background:var(--card);cursor:pointer;}
+.tf.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.porto-item{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px 18px;margin:0 16px 10px;display:flex;align-items:center;justify-content:space-between;gap:12px;animation:fadeIn 0.25s ease;}
+.porto-left{flex:1;min-width:0;}
+.porto-title{font-size:14px;font-weight:500;margin-bottom:6px;line-height:1.4;}
+.porto-meta{display:flex;align-items:center;gap:8px;}
+.ptag{font-size:11px;padding:3px 9px;border-radius:8px;font-weight:600;}
+.pdate{font-size:11px;color:var(--dim);}
+.porto-del{background:none;border:none;cursor:pointer;color:var(--dim);font-size:17px;padding:4px 8px;border-radius:8px;width:auto;}
+.porto-del:hover{background:rgba(248,113,113,0.15);color:var(--red);}
+.empty{text-align:center;padding:48px 20px;color:var(--dim);font-size:13px;}
+.empty i{font-size:32px;margin-bottom:12px;display:block;opacity:0.3;}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(13,18,32,0.92);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:12px 0 28px;}
+
+/* PUBLIC PROFILE CARDS */
+.pub-card{text-align:center;padding:18px 12px;}
+.pub-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin:4px 0;}
+.pub-bio{font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:8px;min-height:16px;}
+.pub-links{display:flex;flex-direction:column;gap:5px;align-items:center;}
+.pub-link{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--dim);text-decoration:none;}
+.pub-link:hover{color:var(--accent);}
+
+/* PROFILE EDIT */
+.prof-field{margin-bottom:14px;}
+.prof-label{font-size:11px;color:var(--dim);letter-spacing:0.5px;display:block;margin-bottom:6px;}
+.prof-input{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;}
+.prof-input:focus{outline:none;border-color:var(--accent);}
+.prof-ta{resize:none;min-height:75px;line-height:1.5;}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;padding:4px 12px;color:var(--dim);font-family:'DM Sans',sans-serif;width:auto;transition:color 0.18s;}
+.nav-btn i{font-size:20px;}
+.nav-btn span{font-size:10px;font-weight:500;}
+.nav-btn.active{color:var(--accent);}
+.chart-wrap{display:flex;justify-content:center;padding:10px 0;}
+
+/* MEETING */
+.meet-add-box{margin:0 16px 16px;}
+.meet-date-row{display:flex;gap:8px;margin-bottom:10px;}
+.meet-date-row input[type=date]{flex:1;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;}
+.meet-note{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;resize:none;min-height:80px;margin-bottom:10px;}
+.meet-note:focus,.meet-date-row input:focus{outline:none;border-color:var(--accent);}
+.meet-media-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.media-btn{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--dim);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.media-btn:hover{border-color:var(--accent);color:var(--accent);}
+.media-btn i{font-size:14px;}
+.media-previews{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.media-thumb{position:relative;width:72px;height:72px;border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+.media-thumb img{width:100%;height:100%;object-fit:cover;}
+.media-thumb .rm{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,0.7);border:none;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
+.audio-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;}
+.audio-item audio{flex:1;height:32px;}
+.audio-item .rm{background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:0;}
+.rec-btn{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--dim);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.rec-btn.recording{border-color:var(--red);color:var(--red);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.meet-save-btn{width:100%;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),#6c63ff);color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+.meet-feed{padding:0 16px;}
+.meet-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:12px;}
+.meet-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.meet-card-date{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);}
+.meet-card-del{background:none;border:none;cursor:pointer;color:var(--dim);font-size:17px;width:auto;padding:0 4px;}
+.meet-card-del:hover{color:var(--red);}
+.meet-card-note{font-size:13px;color:var(--dim);line-height:1.6;margin-bottom:12px;white-space:pre-wrap;}
+.meet-imgs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.meet-img{width:80px;height:80px;border-radius:10px;object-fit:cover;border:1px solid var(--border);cursor:pointer;}
+.meet-img:hover{opacity:0.85;}
+.meet-audios{display:flex;flex-direction:column;gap:6px;}
+
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;display:none;}
+.lightbox.open{display:flex;}
+.lightbox img{max-width:95%;max-height:90vh;border-radius:12px;object-fit:contain;}
+.lightbox-close{position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:24px;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-icon">💎</div>
+    <h2>Mentorship System</h2>
+    <p id="login-sub">Та хэн гэж нэвтрэх вэ?</p>
+
+    <div id="role-select" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+      <div class="role-pick" id="pick-mentor" onclick="pickRole('mentor')">
+        <div style="font-size:28px;margin-bottom:8px;">🎓</div>
+        <div style="font-size:14px;font-weight:700;font-family:'Syne',sans-serif;">Ментор</div>
+        <div style="font-size:11px;color:var(--dim);margin-top:3px;">Тайлан шалгах</div>
+      </div>
+      <div class="role-pick" id="pick-mentee" onclick="pickRole('mentee')">
+        <div style="font-size:28px;margin-bottom:8px;">📝</div>
+        <div style="font-size:14px;font-weight:700;font-family:'Syne',sans-serif;">Оролцогч</div>
+        <div style="font-size:11px;color:var(--dim);margin-top:3px;">Тайлан оруулах</div>
+      </div>
+    </div>
+
+    <div id="pass-section" style="display:none;">
+      <input type="password" id="pass" placeholder="Нууц үг" onkeydown="if(event.key==='Enter')loginApp()">
+      <button class="btn-primary" onclick="loginApp()">Нэвтрэх</button>
+      <button onclick="backToRoles()" style="width:100%;margin-top:8px;padding:10px;border:1px solid var(--border);border-radius:12px;background:none;color:var(--dim);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;">← Буцах</button>
+    </div>
+
+    <div class="login-error" id="loginErr">Нууц үг буруу байна!</div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <button class="hamburger" onclick="openDrawer()"><i class="fas fa-bars"></i></button>
+    <div class="topbar-logo">Mentorship</div>
+    <div class="avatar-btn" id="avatarBtn">М</div>
+  </div>
+
+  <!-- DRAWER OVERLAY -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+  <!-- DRAWER -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-head">
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;">Mentorship</div>
+        <div style="font-size:12px;color:var(--dim);margin-top:3px;" id="drawer-sub">Хөтөлбөр</div>
+      </div>
+      <button class="drawer-close" onclick="closeDrawer()">×</button>
+    </div>
+
+    <div class="drawer-section">
+      <div class="drawer-section-label">Ангиллууд</div>
+      <button class="drawer-item active" id="di-home" onclick="goPage('home');closeDrawer()">
+        <i class="fas fa-house"></i> Нүүр хуудас
+      </button>
+      <button class="drawer-item" id="di-report" onclick="goPage('report');closeDrawer()">
+        <i class="fas fa-pen-nib"></i> Daily Report
+      </button>
+      <button class="drawer-item" id="di-history" onclick="goPage('history');closeDrawer()">
+        <i class="fas fa-clock-rotate-left"></i> Тайлангийн түүх
+      </button>
+      <button class="drawer-item" id="di-portfolio" onclick="goPage('portfolio');closeDrawer()">
+        <i class="fas fa-layer-group"></i> Хийсэн ажлууд
+      </button>
+      <button class="drawer-item" id="di-stats" onclick="goPage('stats');closeDrawer()">
+        <i class="fas fa-camera"></i> Уулзалтууд
+      </button>
+    </div>
+
+    <div class="drawer-divider"></div>
+
+    <div class="drawer-section">
+      <div class="drawer-section-label">Туслах цэс</div>
+      <button class="drawer-item" id="di-profile" onclick="goPage('profile');closeDrawer()">
+        <i class="fas fa-user"></i> Профайл тохиргоо
+      </button>
+    </div>
+
+  </div>
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <div class="top-header">
+      <div>
+        <h1 id="greeting">Сайн уу 👋</h1>
+        <span id="today-date"></span>
+      </div>
+    </div>
+    <div class="profile-grid">
+      <div class="profile-card pub-card">
+        <div class="p-avatar-wrap">
+          <div class="p-avatar" style="background:rgba(79,142,247,0.15);color:var(--accent);" id="mentor-av">М</div>
+        </div>
+        <div class="p-role" style="color:var(--accent);">Mentor</div>
+        <div class="pub-name" id="pub-mentor-name">—</div>
+        <div class="pub-bio" id="pub-mentor-bio"></div>
+        <div class="pub-links" id="pub-mentor-links"></div>
+      </div>
+      <div class="profile-card pub-card">
+        <div class="p-avatar-wrap">
+          <div class="p-avatar" style="background:rgba(52,211,153,0.15);color:var(--accent2);" id="mentee-av">О</div>
+        </div>
+        <div class="p-role" style="color:var(--accent2);">Оролцогч</div>
+        <div class="pub-name" id="pub-mentee-name">—</div>
+        <div class="pub-bio" id="pub-mentee-bio"></div>
+        <div class="pub-links" id="pub-mentee-links"></div>
+      </div>
+    </div>
+    <div class="card" style="padding:18px 16px;">
+      <div class="wp-header" style="margin-bottom:12px;">
+        <div class="wp-label">Идэвхийн календар</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button onclick="calYear(-1)" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:16px;padding:2px 6px;width:auto;">‹</button>
+          <span style="font-size:13px;color:var(--dim);" id="cal-year-label">2025</span>
+          <button onclick="calYear(1)" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:16px;padding:2px 6px;width:auto;">›</button>
+        </div>
+      </div>
+      <div id="activity-cal" style="overflow-x:auto;"></div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:10px;justify-content:flex-end;">
+        <span style="font-size:11px;color:var(--dim);">Бага</span>
+        <div style="width:10px;height:10px;border-radius:2px;background:rgba(255,255,255,0.06);"></div>
+        <div style="width:10px;height:10px;border-radius:2px;background:rgba(79,142,247,0.3);"></div>
+        <div style="width:10px;height:10px;border-radius:2px;background:rgba(79,142,247,0.6);"></div>
+        <div style="width:10px;height:10px;border-radius:2px;background:#4f8ef7;"></div>
+        <span style="font-size:11px;color:var(--dim);">Их</span>
+      </div>
+    </div>
+    <div class="quick-actions">
+      <button class="qa-btn" onclick="goPage('report')">
+        <i class="fas fa-pen-nib" style="color:var(--accent);"></i>
+        <span>Daily Report</span><small>Өнөөдрийн тайлан</small>
+      </button>
+      <button class="qa-btn" onclick="goPage('history')">
+        <i class="fas fa-clock-rotate-left" style="color:var(--accent3);"></i>
+        <span>Түүх</span><small>Өмнөх тайлангууд</small>
+      </button>
+      <button class="qa-btn" onclick="goPage('portfolio')">
+        <i class="fas fa-layer-group" style="color:var(--accent2);"></i>
+        <span>Portfolio</span><small>Хийсэн ажлууд</small>
+      </button>
+      <button class="qa-btn" onclick="goPage('stats')">
+        <i class="fas fa-camera" style="color:#a78bfa;"></i>
+        <span>Уулзалтууд</span><small>Зураг, бичлэг</small>
+      </button>
+    </div>
+  </div>
+
+  <!-- DAILY REPORT -->
+  <div class="page" id="page-report">
+    <div class="top-header">
+      <div><h1 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;">Daily Report</h1>
+      <span id="report-date-label"></span></div>
+    </div>
+
+    <!-- DATE PICKER ROW -->
+    <div style="padding:0 16px;margin-bottom:16px;">
+      <button class="date-pick-btn" id="date-pick-btn" onclick="toggleDatePicker()">
+        <i class="fas fa-calendar-days"></i>
+        <span id="date-pick-label">Өдөр сонгох</span>
+        <i class="fas fa-chevron-down" style="margin-left:auto;font-size:11px;opacity:0.5;"></i>
+      </button>
+      <!-- CALENDAR POPUP -->
+      <div class="cal-popup" id="cal-popup">
+        <div class="cal-nav">
+          <button onclick="calPopNav(-1,'year')" class="cal-nav-btn">«</button>
+          <button onclick="calPopNav(-1,'month')" class="cal-nav-btn">‹</button>
+          <span id="cal-pop-label" style="flex:1;text-align:center;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;"></span>
+          <button onclick="calPopNav(1,'month')" class="cal-nav-btn">›</button>
+          <button onclick="calPopNav(1,'year')" class="cal-nav-btn">»</button>
+        </div>
+        <div class="cal-dow-row">
+          <span>Да</span><span>Мя</span><span>Лх</span><span>Пү</span><span>Ба</span><span>Бя</span><span>Ня</span>
+        </div>
+        <div class="cal-days-grid" id="cal-days-grid"></div>
+      </div>
+    </div>
+    <div class="task-box card">
+      <div class="card-title"><i class="fas fa-list-check" style="color:var(--accent2);"></i> Даалгавар</div>
+      <div id="task-list"></div>
+      <button class="add-task" onclick="addTask()">+ Даалгавар нэмэх</button>
+    </div>
+    <div class="quadrant-grid">
+      <div class="quad">
+        <div class="quad-label" style="color:#4f8ef7;">🏭 Салбарын мэдлэг</div>
+        <textarea id="q-industry" placeholder="Өнөөдөр юу сурсан бэ?"></textarea>
+      </div>
+      <div class="quad">
+        <div class="quad-label" style="color:#34d399;">💼 Бизнес & маркетинг</div>
+        <textarea id="q-business" placeholder="Бизнесийн талаар юу ойлгосон?"></textarea>
+      </div>
+      <div class="quad">
+        <div class="quad-label" style="color:#f59e0b;">🌱 Хувь хүний өсөлт</div>
+        <textarea id="q-personal" placeholder="Юуг сайжруулах вэ?"></textarea>
+      </div>
+      <div class="quad">
+        <div class="quad-label" style="color:#a78bfa;">📝 Тэмдэглэл</div>
+        <textarea id="q-notes" placeholder="Асуулт, санаа..."></textarea>
+      </div>
+    </div>
+    <div class="action-row">
+      <span class="status-txt" id="status-msg"></span>
+      <button class="save-btn" onclick="saveReport()">Хадгалах</button>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="page" id="page-history">
+    <div class="top-header">
+      <div><h1 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;">Тайлангийн түүх</h1>
+      <span>Бүх өдрийн бичлэг</span></div>
+    </div>
+    <div id="history-list"></div>
+  </div>
+
+  <!-- PORTFOLIO -->
+  <div class="page" id="page-portfolio">
+    <div class="top-header">
+      <div><h1 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;">Хийсэн ажлууд</h1>
+      <span>Ментершипийн явцад хийсэн бүтээлүүд</span></div>
+    </div>
+    <div class="porto-add-row">
+      <input id="porto-input" placeholder="Ажлын нэр оруулна уу..." onkeydown="if(event.key==='Enter')addPorto()">
+      <select id="porto-tag">
+        <option value="судалгаа">📊 Судалгаа</option>
+        <option value="логистик">🚚 Логистик</option>
+        <option value="бизнес">💼 Бизнес</option>
+        <option value="дизайн">🎨 Дизайн</option>
+        <option value="тайлан">📝 Тайлан</option>
+        <option value="бусад">✨ Бусад</option>
+      </select>
+      <button class="add-btn" onclick="addPorto()">+ Нэмэх</button>
+    </div>
+    <div class="tag-filters" id="tag-filters"></div>
+    <div id="porto-list"></div>
+  </div>
+
+  <!-- MEETINGS -->
+  <div class="page" id="page-stats">
+    <div class="top-header">
+      <div><h1 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;">Уулзалтууд</h1>
+      <span>Зураг, бичлэг, тэмдэглэл</span></div>
+    </div>
+
+    <!-- ADD NEW MEETING -->
+    <div class="meet-add-box card">
+      <div class="card-title"><i class="fas fa-plus-circle" style="color:var(--accent);"></i> Уулзалт нэмэх</div>
+      <div class="meet-date-row">
+        <input type="date" id="meet-date">
+      </div>
+      <textarea class="meet-note" id="meet-note" placeholder="Уулзалтын тэмдэглэл, хэлэлцсэн зүйлс..."></textarea>
+
+      <!-- image previews -->
+      <div class="media-previews" id="img-previews"></div>
+      <!-- audio previews -->
+      <div id="audio-previews"></div>
+
+      <div class="meet-media-row">
+        <button class="media-btn" onclick="document.getElementById('meet-img-input').click()">
+          <i class="fas fa-image"></i> Зураг нэмэх
+        </button>
+        <input type="file" id="meet-img-input" accept="image/*" multiple style="display:none" onchange="addMeetImages(this)">
+        <button class="rec-btn" id="rec-btn" onclick="toggleRecording()">
+          <i class="fas fa-microphone"></i> <span id="rec-label">Дуу бичих</span>
+        </button>
+      </div>
+
+      <button class="meet-save-btn" onclick="saveMeeting()">Хадгалах</button>
+    </div>
+
+    <!-- FEED -->
+    <div class="meet-feed" id="meet-feed"></div>
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightbox-img" src="">
+    <button class="lightbox-close" onclick="closeLightbox()">×</button>
+  </div>
+
+  <!-- PROFILE EDIT -->
+  <div class="page" id="page-profile">
+    <div class="top-header">
+      <div><h1 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;">Профайл тохиргоо</h1>
+      <span id="profile-role-label">Өөрийн мэдээллээ засна уу</span></div>
+    </div>
+    <div class="card" id="profile-edit-card">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+        <div class="p-avatar-wrap" onclick="document.getElementById('profile-photo-input').click()" style="margin:0;flex-shrink:0;">
+          <div class="p-avatar" id="profile-edit-av" style="background:rgba(79,142,247,0.15);color:var(--accent);width:64px;height:64px;font-size:22px;">М</div>
+          <div class="p-avatar-edit"><i class="fas fa-camera"></i></div>
+        </div>
+        <input type="file" id="profile-photo-input" accept="image/*" style="display:none" onchange="uploadProfilePhoto(this)">
+        <div>
+          <div style="font-size:13px;color:var(--dim);">Профайл зураг</div>
+          <div style="font-size:12px;color:var(--dim);margin-top:3px;">Дарж солих</div>
+        </div>
+      </div>
+
+      <div class="prof-field">
+        <label class="prof-label">Нэр</label>
+        <input class="prof-input" id="prof-name" placeholder="Бүтэн нэр">
+      </div>
+      <div class="prof-field">
+        <label class="prof-label">Товч танилцуулга</label>
+        <textarea class="prof-input prof-ta" id="prof-bio" placeholder="Та өөрийн тухай товч бичнэ үү..."></textarea>
+      </div>
+      <div class="prof-field">
+        <label class="prof-label"><i class="fas fa-phone" style="width:14px;"></i> Утасны дугаар</label>
+        <input class="prof-input" id="prof-phone" placeholder="+976 9900 0000" type="tel">
+      </div>
+      <div class="prof-field">
+        <label class="prof-label"><i class="fab fa-instagram" style="width:14px;color:#e1306c;"></i> Instagram</label>
+        <input class="prof-input" id="prof-ig" placeholder="@username">
+      </div>
+      <div class="prof-field">
+        <label class="prof-label"><i class="fab fa-facebook" style="width:14px;color:#1877f2;"></i> Facebook</label>
+        <input class="prof-input" id="prof-fb" placeholder="facebook.com/username">
+      </div>
+      <button class="save-btn" style="width:100%;margin-top:8px;" onclick="saveProfile()">Хадгалах</button>
+      <div class="status-txt" id="prof-status" style="text-align:center;margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-home" onclick="goPage('home')"><i class="fas fa-house"></i><span>Нүүр</span></button>
+    <button class="nav-btn" id="nav-report" onclick="goPage('report')"><i class="fas fa-pen-nib"></i><span>Тайлан</span></button>
+    <button class="nav-btn" id="nav-history" onclick="goPage('history')"><i class="fas fa-clock-rotate-left"></i><span>Түүх</span></button>
+    <button class="nav-btn" id="nav-portfolio" onclick="goPage('portfolio')"><i class="fas fa-layer-group"></i><span>Portfolio</span></button>
+    <button class="nav-btn" id="nav-stats" onclick="goPage('stats')"><i class="fas fa-camera"></i><span>Уулзалт</span></button>
+  </nav>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB8OgrYt4vvC92Gu-MFzMY5khZDLHeqneY",
+  authDomain: "goz44-2e14c.firebaseapp.com",
+  projectId: "goz44-2e14c",
+  storageBucket: "goz44-2e14c.firebasestorage.app",
+  messagingSenderId: "819051445534",
+  appId: "1:819051445534:web:b6afa5ca388b16f4975d0f"
+};
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+
+const DAYS = [
+  {key:'mon',label:'Даваа',color:'#4f8ef7'},
+  {key:'tue',label:'Мягмар',color:'#34d399'},
+  {key:'wed',label:'Лхагва',color:'#a78bfa'},
+  {key:'thu',label:'Пүрэв',color:'#f59e0b'},
+  {key:'fri',label:'Баасан',color:'#f87171'},
+  {key:'sat',label:'Бямба',color:'#fb923c'},
+  {key:'sun',label:'Ням',color:'#94a3b8'},
+];
+const TAG_COLORS = {
+  судалгаа:{bg:'rgba(79,142,247,0.15)',color:'#4f8ef7'},
+  логистик:{bg:'rgba(52,211,153,0.15)',color:'#34d399'},
+  бизнес:{bg:'rgba(245,158,11,0.15)',color:'#f59e0b'},
+  дизайн:{bg:'rgba(167,139,250,0.15)',color:'#a78bfa'},
+  тайлан:{bg:'rgba(248,113,113,0.15)',color:'#f87171'},
+  бусад:{bg:'rgba(148,163,184,0.15)',color:'#94a3b8'},
+};
+
+let currentDay = null;
+let reports = {}, tasks = {}, portfolio = [], filterTag = 'all';
+let currentRole = null; // 'mentor' | 'mentee'
+
+const PASSWORDS = { mentor: 'mentor1234', mentee: '1234' };
+
+window.pickRole = function(role) {
+  currentRole = role;
+  document.getElementById('role-select').style.display = 'none';
+  document.getElementById('pass-section').style.display = 'block';
+  document.getElementById('login-sub').textContent = role === 'mentor' ? '🎓 Менторын нууц үг' : '📝 Оролцогчийн нууц үг';
+  document.getElementById('pass').value = '';
+  document.getElementById('pass').focus();
+  document.getElementById('pick-mentor').className = 'role-pick' + (role==='mentor'?' selected mentor':'');
+  document.getElementById('pick-mentee').className = 'role-pick' + (role==='mentee'?' selected mentee':'');
+};
+
+window.backToRoles = function() {
+  document.getElementById('role-select').style.display = 'grid';
+  document.getElementById('pass-section').style.display = 'none';
+  document.getElementById('login-sub').textContent = 'Та хэн гэж нэвтрэх вэ?';
+  currentRole = null;
+};
+
+window.loginApp = function() {
+  const val = document.getElementById('pass').value;
+  if (currentRole && val === PASSWORDS[currentRole]) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    init();
+  } else {
+    const e = document.getElementById('loginErr');
+    e.style.display = 'block';
+    setTimeout(() => e.style.display = 'none', 2500);
+  }
+};
+
+function applyRoleView() {
+  const isMentor = currentRole === 'mentor';
+  // Mentor: can see history+comments, cannot write daily report
+  // Mentee: can write daily report, sees mentor comments read-only
+  document.getElementById('nav-report').style.display = isMentor ? 'none' : 'flex';
+  document.getElementById('di-report').style.display = isMentor ? 'none' : 'flex';
+  // Topbar role badge
+  document.getElementById('avatarBtn').textContent = isMentor ? '🎓' : '📝';
+  document.getElementById('avatarBtn').style.fontSize = '18px';
+  document.getElementById('drawer-sub').textContent = isMentor ? 'Ментор' : 'Оролцогч';
+}
+
+function loadLocal() {
+  try { reports = JSON.parse(localStorage.getItem('mr3')||'{}'); } catch(e) { reports={}; }
+  try { tasks = JSON.parse(localStorage.getItem('mt3')||'{}'); } catch(e) { tasks={}; }
+  try { portfolio = JSON.parse(localStorage.getItem('mp3')||'[]'); } catch(e) { portfolio=[]; }
+  document.getElementById('mentor-name').value = localStorage.getItem('mname3')||'';
+  document.getElementById('mentee-name').value = localStorage.getItem('mename3')||'';
+}
+function saveLocal() {
+  localStorage.setItem('mr3', JSON.stringify(reports));
+  localStorage.setItem('mt3', JSON.stringify(tasks));
+  localStorage.setItem('mp3', JSON.stringify(portfolio));
+}
+
+window.saveNames = function() {
+  const mn = document.getElementById('mentor-name').value;
+  const me = document.getElementById('mentee-name').value;
+  localStorage.setItem('mname3', mn);
+  localStorage.setItem('mename3', me);
+  document.getElementById('mentor-av').textContent = mn ? mn[0].toUpperCase() : 'М';
+  document.getElementById('mentee-av').textContent = me ? me[0].toUpperCase() : 'О';
+  const h = new Date().getHours();
+  const g = h<12?'Өглөөний мэнд':h<17?'Өдрийн мэнд':'Оройн мэнд';
+  const name = currentRole==='mentor' ? mn : me;
+  document.getElementById('greeting').textContent = name ? `${g}, ${name} 👋` : `${g} 👋`;
+  renderActivityCal();
+};
+
+let calDisplayYear = new Date().getFullYear();
+
+window.calYear = function(delta) {
+  calDisplayYear += delta;
+  renderActivityCal();
+};
+
+function renderActivityCal() {
+  const container = document.getElementById('activity-cal');
+  if (!container) return;
+  const year = calDisplayYear;
+  document.getElementById('cal-year-label').textContent = year + ' он';
+
+  // Build a map of dateKey -> level (0-3) from reports
+  // reports keys are day-of-week keys (mon,tue...) — we need dated keys too
+  // We'll also check localStorage for dated report keys like "2025-04-28"
+  let datedReports = {};
+  try { datedReports = JSON.parse(localStorage.getItem('dated_reports')||'{}'); } catch(e){}
+  // Also count current week's DAYS reports as this week's dates
+  const now = new Date();
+  const dow = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((dow+6)%7));
+  DAYS.forEach((d,i) => {
+    if (reports[d.key] && (reports[d.key].industry || reports[d.key].business || reports[d.key].personal)) {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + i);
+      const key = date.toISOString().split('T')[0];
+      datedReports[key] = (datedReports[key]||0) + 1;
+    }
+  });
+
+  // Build calendar grid: weeks as columns, days as rows (Mon-Sun)
+  const jan1 = new Date(year, 0, 1);
+  const dec31 = new Date(year, 11, 31);
+  // Find Monday on or before Jan 1
+  const startOffset = (jan1.getDay() + 6) % 7;
+  const gridStart = new Date(jan1);
+  gridStart.setDate(jan1.getDate() - startOffset);
+
+  const MONTHS = ['1','2','3','4','5','6','7','8','9','10','11','12'];
+  const DAY_LABELS = ['Да','Мя','Лх','Пү','Ба','Бя','Ня'];
+  const CELL = 11; const GAP = 2;
+
+  let weeks = [];
+  let cur = new Date(gridStart);
+  while (cur <= dec31 || cur.getDay() !== 1 || weeks.length < 2) {
+    let week = [];
+    for (let d = 0; d < 7; d++) {
+      const key = cur.toISOString().split('T')[0];
+      const inYear = cur.getFullYear() === year;
+      const count = datedReports[key] || 0;
+      const level = !inYear ? -1 : count === 0 ? 0 : count <= 1 ? 1 : count <= 2 ? 2 : 3;
+      week.push({ key, label: cur.getDate(), month: cur.getMonth(), inYear, level, date: new Date(cur) });
+      cur.setDate(cur.getDate() + 1);
+    }
+    weeks.push(week);
+    if (cur.getFullYear() > year && cur.getMonth() > 0) break;
+  }
+
+  // Month labels
+  let monthLabels = new Array(weeks.length).fill('');
+  weeks.forEach((week, wi) => {
+    const firstInYear = week.find(d => d.inYear);
+    if (firstInYear) {
+      const m = firstInYear.month;
+      const prevWeek = wi > 0 ? weeks[wi-1].find(d => d.inYear) : null;
+      if (!prevWeek || prevWeek.month !== m) monthLabels[wi] = MONTHS[m];
+    }
+  });
+
+  const svgW = weeks.length * (CELL + GAP) + 28;
+  const svgH = 7 * (CELL + GAP) + 22;
+
+  let cells = '';
+  weeks.forEach((week, wi) => {
+    const x = 28 + wi * (CELL + GAP);
+    week.forEach((day, di) => {
+      const y = 20 + di * (CELL + GAP);
+      let fill;
+      if (day.level === -1) fill = 'transparent';
+      else if (day.level === 0) fill = 'rgba(255,255,255,0.06)';
+      else if (day.level === 1) fill = 'rgba(79,142,247,0.3)';
+      else if (day.level === 2) fill = 'rgba(79,142,247,0.6)';
+      else fill = '#4f8ef7';
+      if (day.level >= 0) {
+        const title = `${day.key}${day.level>0?' — тайлан бичсэн':''}`;
+        cells += `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="2" fill="${fill}"><title>${title}</title></rect>`;
+      }
+    });
+  });
+
+  let mLabels = monthLabels.map((m,wi) => m ?
+    `<text x="${28 + wi*(CELL+GAP)}" y="13" font-size="9" fill="rgba(107,122,153,0.9)" font-family="DM Sans,sans-serif">${m}</text>` : ''
+  ).join('');
+
+  let dLabels = DAY_LABELS.map((l,di) =>
+    di % 2 === 0 ? `<text x="0" y="${20 + di*(CELL+GAP) + CELL - 2}" font-size="9" fill="rgba(107,122,153,0.7)" font-family="DM Sans,sans-serif">${l}</text>` : ''
+  ).join('');
+
+  container.innerHTML = `<svg width="${svgW}" height="${svgH}" style="display:block;">${mLabels}${dLabels}${cells}</svg>`;
+
+  // Also update total count display
+  const total = Object.keys(datedReports).filter(k => k.startsWith(year+'')).length;
+  document.getElementById('cal-year-label').textContent = `${year} он — ${total} өдөр`;
+}
+
+function init() {
+  loadLocal();
+  applyRoleView();
+  const now = new Date();
+  document.getElementById('today-date').textContent = now.toLocaleDateString('mn-MN',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  document.getElementById('report-date-label').textContent = now.toLocaleDateString('mn-MN',{year:'numeric',month:'long',day:'numeric'});
+  saveNames();
+  renderHomeProfiles();
+  renderActivityCal();
+}
+
+window.openDrawer=function(){
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+};
+window.closeDrawer=function(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+  document.body.style.overflow='';
+};
+
+window.goPage = function(p) {
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.drawer-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  const nb=document.getElementById('nav-'+p);
+  if(nb) nb.classList.add('active');
+  const di=document.getElementById('di-'+p);
+  if(di) di.classList.add('active');
+  if(p==='report') initReport();
+  if(p==='history') renderHistory();
+  if(p==='portfolio') renderPortfolio();
+  if(p==='stats') renderStats();
+  if(p==='profile') initProfileEdit();
+};
+
+// REPORT — date picker
+let selectedDateKey = null; // "2025-05-03"
+let calPopYear = new Date().getFullYear();
+let calPopMonth = new Date().getMonth();
+
+function initReport() {
+  if (!selectedDateKey) {
+    const today = new Date();
+    selectedDateKey = today.toISOString().split('T')[0];
+  }
+  updateDateBtn();
+  renderCalPopup();
+  loadDateReport(selectedDateKey);
+}
+
+function updateDateBtn() {
+  const d = new Date(selectedDateKey + 'T00:00:00');
+  const label = d.toLocaleDateString('mn-MN', {year:'numeric', month:'long', day:'numeric', weekday:'short'});
+  document.getElementById('date-pick-label').textContent = label;
+  document.getElementById('date-pick-btn').classList.add('has-date');
+  document.getElementById('report-date-label').textContent = label;
+}
+
+window.toggleDatePicker = function() {
+  document.getElementById('cal-popup').classList.toggle('open');
+};
+
+window.calPopNav = function(delta, unit) {
+  if (unit === 'month') { calPopMonth += delta; if (calPopMonth > 11) { calPopMonth=0; calPopYear++; } if (calPopMonth < 0) { calPopMonth=11; calPopYear--; } }
+  else { calPopYear += delta; }
+  renderCalPopup();
+};
+
+function renderCalPopup() {
+  const MN_MONTHS = ['1-р сар','2-р сар','3-р сар','4-р сар','5-р сар','6-р сар','7-р сар','8-р сар','9-р сар','10-р сар','11-р сар','12-р сар'];
+  document.getElementById('cal-pop-label').textContent = `${calPopYear} / ${MN_MONTHS[calPopMonth]}`;
+  const grid = document.getElementById('cal-days-grid'); grid.innerHTML = '';
+  const firstDay = new Date(calPopYear, calPopMonth, 1);
+  const lastDay = new Date(calPopYear, calPopMonth+1, 0);
+  const startOffset = (firstDay.getDay() + 6) % 7;
+  const today = new Date().toISOString().split('T')[0];
+  let datedReports = {};
+  try { datedReports = JSON.parse(localStorage.getItem('dated_reports')||'{}'); } catch(e){}
+
+  // prev month padding
+  for (let i = 0; i < startOffset; i++) {
+    const d = new Date(calPopYear, calPopMonth, 1 - startOffset + i);
+    const btn = document.createElement('button');
+    btn.className = 'cal-day other-month';
+    btn.textContent = d.getDate();
+    btn.onclick = () => pickDate(d.toISOString().split('T')[0]);
+    grid.appendChild(btn);
+  }
+  // current month
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const dateKey = `${calPopYear}-${String(calPopMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const btn = document.createElement('button');
+    let cls = 'cal-day';
+    if (dateKey === today) cls += ' today';
+    if (dateKey === selectedDateKey) cls += ' selected';
+    if (datedReports[dateKey]) cls += ' has-report';
+    btn.className = cls;
+    btn.textContent = d;
+    btn.onclick = () => pickDate(dateKey);
+    grid.appendChild(btn);
+  }
+  // next month padding
+  const remaining = 42 - startOffset - lastDay.getDate();
+  for (let i = 1; i <= remaining && remaining < 14; i++) {
+    const d = new Date(calPopYear, calPopMonth+1, i);
+    const btn = document.createElement('button');
+    btn.className = 'cal-day other-month';
+    btn.textContent = d.getDate();
+    btn.onclick = () => pickDate(d.toISOString().split('T')[0]);
+    grid.appendChild(btn);
+  }
+}
+
+function pickDate(dateKey) {
+  if (selectedDateKey) saveCurrentReport();
+  selectedDateKey = dateKey;
+  const d = new Date(dateKey + 'T00:00:00');
+  calPopYear = d.getFullYear();
+  calPopMonth = d.getMonth();
+  updateDateBtn();
+  renderCalPopup();
+  loadDateReport(dateKey);
+  document.getElementById('cal-popup').classList.remove('open');
+  document.getElementById('status-msg').textContent = '';
+}
+
+function loadDateReport(dateKey) {
+  let datedReports = {};
+  try { datedReports = JSON.parse(localStorage.getItem('dated_reports_data')||'{}'); } catch(e){}
+  const r = datedReports[dateKey] || {};
+  document.getElementById('q-industry').value = r.industry||'';
+  document.getElementById('q-business').value = r.business||'';
+  document.getElementById('q-personal').value = r.personal||'';
+  document.getElementById('q-notes').value = r.notes||'';
+  let datedTasks = {};
+  try { datedTasks = JSON.parse(localStorage.getItem('dated_tasks')||'{}'); } catch(e){}
+  const t = datedTasks[dateKey] || [];
+  const list = document.getElementById('task-list'); list.innerHTML = '';
+  if (t.length === 0) addTaskRow('', false);
+  else t.forEach(x => addTaskRow(x.text, x.done));
+}
+
+function saveCurrentReport() {
+  if (!selectedDateKey) return;
+  let datedReports = {};
+  try { datedReports = JSON.parse(localStorage.getItem('dated_reports_data')||'{}'); } catch(e){}
+  const data = {
+    industry: document.getElementById('q-industry').value,
+    business: document.getElementById('q-business').value,
+    personal: document.getElementById('q-personal').value,
+    notes: document.getElementById('q-notes').value,
+  };
+  datedReports[selectedDateKey] = data;
+  localStorage.setItem('dated_reports_data', JSON.stringify(datedReports));
+  let datedTasks = {};
+  try { datedTasks = JSON.parse(localStorage.getItem('dated_tasks')||'{}'); } catch(e){}
+  datedTasks[selectedDateKey] = getTasksDOM();
+  localStorage.setItem('dated_tasks', JSON.stringify(datedTasks));
+}
+function getTasksDOM() {
+  return Array.from(document.querySelectorAll('#task-list .task-row')).map(r=>({
+    text:r.querySelector('input[type=text]').value,
+    done:r.querySelector('input[type=checkbox]').checked
+  }));
+}
+function renderTaskList(key) {
+  const list=document.getElementById('task-list'); list.innerHTML='';
+  const t=tasks[key]||[];
+  if(t.length===0) addTaskRow('',false);
+  else t.forEach(x=>addTaskRow(x.text,x.done));
+}
+function addTaskRow(text='',done=false) {
+  const list=document.getElementById('task-list');
+  const row=document.createElement('div'); row.className='task-row';
+  row.innerHTML=`<input type="checkbox"${done?' checked':''}><input type="text" value="${text.replace(/"/g,'&quot;')}" placeholder="Даалгавар..."><button class="xbtn" onclick="this.parentElement.remove()">×</button>`;
+  list.appendChild(row);
+}
+window.addTask=function(){addTaskRow();};
+window.saveReport=async function(){
+  if(!selectedDateKey) return;
+  saveCurrentReport();
+  // Mark in activity calendar
+  let dr = {}; try { dr = JSON.parse(localStorage.getItem('dated_reports')||'{}'); } catch(e){}
+  const data = JSON.parse(localStorage.getItem('dated_reports_data')||'{}')[selectedDateKey]||{};
+  if (data.industry||data.business||data.personal||data.notes) dr[selectedDateKey] = 1;
+  localStorage.setItem('dated_reports', JSON.stringify(dr));
+  renderActivityCal();
+  renderCalPopup();
+  // Firebase sync
+  try {
+    await setDoc(doc(db,'reports_dated',selectedDateKey),{...data, tasks: getTasksDOM(), updatedAt:Date.now()});
+  } catch(e){ console.log('Firebase error, saved locally'); }
+  document.getElementById('status-msg').textContent = '✓ Хадгалагдлаа';
+  setTimeout(()=>document.getElementById('status-msg').textContent='', 2500);
+};
+
+// HISTORY
+async function renderHistory() {
+  const list=document.getElementById('history-list'); list.innerHTML='<div class="empty"><i class="fas fa-spinner fa-spin"></i>Уншиж байна...</div>';
+  let datedReports={};
+  try { datedReports=JSON.parse(localStorage.getItem('dated_reports_data')||'{}'); } catch(e){}
+  let datedTasks={};
+  try { datedTasks=JSON.parse(localStorage.getItem('dated_tasks')||'{}'); } catch(e){}
+  try {
+    const snap=await getDocs(collection(db,'reports_dated'));
+    snap.forEach(ds=>{
+      const data=ds.data();
+      if(data.industry||data.business||data.personal||data.notes){
+        datedReports[ds.id]=data;
+        if(data.tasks) datedTasks[ds.id]=data.tasks;
+      }
+    });
+    localStorage.setItem('dated_reports_data',JSON.stringify(datedReports));
+    localStorage.setItem('dated_tasks',JSON.stringify(datedTasks));
+  } catch(e){}
+  const keys=Object.keys(datedReports).filter(k=>datedReports[k]&&(datedReports[k].industry||datedReports[k].business||datedReports[k].personal||datedReports[k].notes));
+  keys.sort((a,b)=>b.localeCompare(a));
+  if(!keys.length){list.innerHTML='<div class="empty"><i class="fas fa-inbox"></i>Одоохондоо тайлан алга.</div>';return;}
+  list.innerHTML='';
+  keys.forEach(dateKey=>{
+    const r=datedReports[dateKey];
+    const t=datedTasks[dateKey]||[];
+    const d=new Date(dateKey+'T00:00:00');
+    const dateLabel=d.toLocaleDateString('mn-MN',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+    const mentorComment=r.mentorComment||'';
+    const reviewed=r.reviewed||false;
+    const el=document.createElement('div'); el.className='hist-item';
+    el.innerHTML=`<div class="hist-card">
+      <div class="hist-day">
+        <span class="day-dot" style="background:var(--accent);box-shadow:0 0 8px rgba(79,142,247,0.4);"></span>
+        ${dateLabel}
+        <span style="margin-left:auto;">${reviewed?'<span class="reviewed-badge">✅ Хянагдсан</span>':'<span class="pending-badge">🕒 Хүлээгдэж байна</span>'}</span>
+      </div>
+      ${t.filter(x=>x.text).length?`<div class="hist-tasks">${t.filter(x=>x.text).map(x=>`<div class="ht-row${x.done?' done-task':''}"><span style="font-size:12px;">${x.done?'✓':'○'}</span> ${x.text}</div>`).join('')}</div>`:''}
+      <div class="hist-grid">
+        ${r.industry?`<div class="hq"><div class="hq-label">🏭 Салбарын мэдлэг</div><div class="hq-val">${r.industry}</div></div>`:''}
+        ${r.business?`<div class="hq"><div class="hq-label">💼 Бизнес</div><div class="hq-val">${r.business}</div></div>`:''}
+        ${r.personal?`<div class="hq"><div class="hq-label">🌱 Хувь хүний өсөлт</div><div class="hq-val">${r.personal}</div></div>`:''}
+        ${r.notes?`<div class="hq"><div class="hq-label">📝 Тэмдэглэл</div><div class="hq-val">${r.notes}</div></div>`:''}
+      </div>
+      <div class="mentor-section">
+        ${mentorComment?`<div style="font-size:11px;color:#4f8ef7;margin-bottom:6px;font-weight:600;">💬 Менторын хариу:</div><div class="mentor-comment-display">${mentorComment}</div>`:''}
+        ${currentRole==='mentor'?`
+        <div class="mentor-reply-area">
+          <textarea id="mc-${dateKey}" placeholder="Хариу бичих...">${mentorComment}</textarea>
+          <button class="btn-small" onclick="saveMentorComment('${dateKey}')">Хариу хадгалах</button>
+        </div>`:(mentorComment?'':'<div style="font-size:12px;color:var(--dim);font-style:italic;">Менторын хариу хүлээгдэж байна...</div>')}
+      </div>
+    </div>`;
+    list.appendChild(el);
+  });
+}
+window.saveMentorComment=async function(dateKey){
+  const comment=document.getElementById(`mc-${dateKey}`).value;
+  let datedReports={}; try{datedReports=JSON.parse(localStorage.getItem('dated_reports_data')||'{}');}catch(e){}
+  if(!datedReports[dateKey]) datedReports[dateKey]={};
+  datedReports[dateKey].mentorComment=comment;
+  datedReports[dateKey].reviewed=true;
+  localStorage.setItem('dated_reports_data',JSON.stringify(datedReports));
+  try{await setDoc(doc(db,'reports_dated',dateKey),{mentorComment:comment,reviewed:true},{merge:true});}catch(e){}
+  renderHistory();
+};
+
+// PORTFOLIO
+window.addPorto=function(){
+  const inp=document.getElementById('porto-input');
+  const tag=document.getElementById('porto-tag').value;
+  const text=inp.value.trim();
+  if(!text) return;
+  portfolio.unshift({id:Date.now(),title:text,tag,date:new Date().toLocaleDateString('mn-MN',{month:'short',day:'numeric'})});
+  saveLocal(); inp.value=''; renderPortfolio();
+};
+window.deletePorto=function(id){
+  portfolio=portfolio.filter(x=>x.id!==id);
+  saveLocal(); renderPortfolio();
+};
+window.setFilter=function(t){filterTag=t;renderPortfolio();};
+function renderPortfolio(){
+  const allTags=[...new Set(portfolio.map(x=>x.tag))];
+  const tf=document.getElementById('tag-filters');
+  tf.innerHTML=`<div class="tf${filterTag==='all'?' active':''}" onclick="setFilter('all')">Бүгд</div>`;
+  allTags.forEach(t=>{const d=document.createElement('div');d.className='tf'+(filterTag===t?' active':'');d.textContent=t;d.onclick=()=>setFilter(t);tf.appendChild(d);});
+  const list=document.getElementById('porto-list');
+  const filtered=filterTag==='all'?portfolio:portfolio.filter(x=>x.tag===filterTag);
+  if(!filtered.length){list.innerHTML='<div class="empty"><i class="fas fa-folder-open"></i>Ажил алга.</div>';return;}
+  list.innerHTML='';
+  filtered.forEach(item=>{
+    const tc=TAG_COLORS[item.tag]||TAG_COLORS['бусад'];
+    const el=document.createElement('div'); el.className='porto-item';
+    el.innerHTML=`<div class="porto-left"><div class="porto-title">${item.title}</div><div class="porto-meta"><span class="ptag" style="background:${tc.bg};color:${tc.color};">${item.tag}</span><span class="pdate">${item.date}</span></div></div><button class="porto-del" onclick="deletePorto(${item.id})">×</button>`;
+    list.appendChild(el);
+  });
+}
+
+// PROFILE
+function loadProfiles() {
+  try { return JSON.parse(localStorage.getItem('mprofiles')||'{}'); } catch(e){ return {}; }
+}
+function saveProfiles(profiles) { localStorage.setItem('mprofiles', JSON.stringify(profiles)); }
+
+function initProfileEdit() {
+  const profiles = loadProfiles();
+  const p = profiles[currentRole] || {};
+  document.getElementById('profile-role-label').textContent = currentRole==='mentor' ? '🎓 Менторын мэдээлэл' : '📝 Оролцогчийн мэдээлэл';
+  document.getElementById('prof-name').value = p.name || '';
+  document.getElementById('prof-bio').value = p.bio || '';
+  document.getElementById('prof-phone').value = p.phone || '';
+  document.getElementById('prof-ig').value = p.ig || '';
+  document.getElementById('prof-fb').value = p.fb || '';
+  // update edit avatar
+  const av = document.getElementById('profile-edit-av');
+  if (p.photo) { av.innerHTML = `<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`; }
+  else { av.textContent = (p.name||'?')[0].toUpperCase(); }
+  document.getElementById('prof-status').textContent = '';
+}
+
+window.uploadProfilePhoto = function(inp) {
+  const file = inp.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const av = document.getElementById('profile-edit-av');
+    av.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    const profiles = loadProfiles();
+    if (!profiles[currentRole]) profiles[currentRole] = {};
+    profiles[currentRole].photo = e.target.result;
+    saveProfiles(profiles);
+    renderHomeProfiles();
+  };
+  reader.readAsDataURL(file);
+  inp.value = '';
+};
+
+window.saveProfile = function() {
+  const profiles = loadProfiles();
+  if (!profiles[currentRole]) profiles[currentRole] = {};
+  profiles[currentRole].name = document.getElementById('prof-name').value.trim();
+  profiles[currentRole].bio = document.getElementById('prof-bio').value.trim();
+  profiles[currentRole].phone = document.getElementById('prof-phone').value.trim();
+  profiles[currentRole].ig = document.getElementById('prof-ig').value.trim();
+  profiles[currentRole].fb = document.getElementById('prof-fb').value.trim();
+  saveProfiles(profiles);
+  renderHomeProfiles();
+  // update greeting & avatar
+  const name = profiles[currentRole].name;
+  const h = new Date().getHours();
+  const g = h<12?'Өглөөний мэнд':h<17?'Өдрийн мэнд':'Оройн мэнд';
+  document.getElementById('greeting').textContent = name ? `${g}, ${name} 👋` : `${g} 👋`;
+  document.getElementById('drawer-sub').textContent = currentRole==='mentor'?'Ментор':'Оролцогч';
+  document.getElementById('prof-status').textContent = 'Хадгалагдлаа ✓';
+  setTimeout(()=>document.getElementById('prof-status').textContent='', 2000);
+};
+
+function renderHomeProfiles() {
+  const profiles = loadProfiles();
+  ['mentor','mentee'].forEach(role => {
+    const p = profiles[role] || {};
+    const suffix = role==='mentor' ? 'mentor' : 'mentee';
+    // avatar
+    const av = document.getElementById(`${suffix}-av`);
+    if (p.photo) { av.innerHTML = `<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`; }
+    else { av.textContent = p.name ? p.name[0].toUpperCase() : (role==='mentor'?'М':'О'); }
+    // name
+    const nameEl = document.getElementById(`pub-${suffix}-name`);
+    if (nameEl) nameEl.textContent = p.name || (role==='mentor'?'Ментор':'Оролцогч');
+    // bio
+    const bioEl = document.getElementById(`pub-${suffix}-bio`);
+    if (bioEl) bioEl.textContent = p.bio || '';
+    // links
+    const linksEl = document.getElementById(`pub-${suffix}-links`);
+    if (linksEl) {
+      let html = '';
+      if (p.phone) html += `<a class="pub-link" href="tel:${p.phone}"><i class="fas fa-phone"></i>${p.phone}</a>`;
+      if (p.ig) html += `<a class="pub-link" href="https://instagram.com/${p.ig.replace('@','')}" target="_blank"><i class="fab fa-instagram" style="color:#e1306c;"></i>${p.ig}</a>`;
+      if (p.fb) html += `<a class="pub-link" href="https://${p.fb.includes('facebook')?p.fb:'facebook.com/'+p.fb}" target="_blank"><i class="fab fa-facebook" style="color:#1877f2;"></i>Facebook</a>`;
+      linksEl.innerHTML = html;
+    }
+  });
+}
+
+// MEETINGS
+let meetings = [];
+let pendingImgs = []; // {dataUrl}
+let pendingAudios = []; // {dataUrl, name}
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+
+function loadMeetings() {
+  try { meetings = JSON.parse(localStorage.getItem('mmeet')||'[]'); } catch(e){ meetings=[]; }
+}
+function saveMeetings() { localStorage.setItem('mmeet', JSON.stringify(meetings)); }
+
+function renderStats() {
+  loadMeetings();
+  // set today's date default
+  const d = document.getElementById('meet-date');
+  if(!d.value) d.value = new Date().toISOString().split('T')[0];
+  renderMeetFeed();
+}
+
+window.addMeetImages = function(inp) {
+  Array.from(inp.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      pendingImgs.push({dataUrl: e.target.result});
+      renderImgPreviews();
+    };
+    reader.readAsDataURL(file);
+  });
+  inp.value='';
+};
+
+function renderImgPreviews() {
+  const c = document.getElementById('img-previews');
+  c.innerHTML = '';
+  pendingImgs.forEach((img, i) => {
+    const wrap = document.createElement('div'); wrap.className='media-thumb';
+    wrap.innerHTML = `<img src="${img.dataUrl}"><button class="rm" onclick="removePendingImg(${i})">×</button>`;
+    c.appendChild(wrap);
+  });
+}
+window.removePendingImg = function(i) { pendingImgs.splice(i,1); renderImgPreviews(); };
+
+window.toggleRecording = async function() {
+  if (!isRecording) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunks, {type:'audio/webm'});
+        const reader = new FileReader();
+        reader.onload = e => {
+          const name = new Date().toLocaleTimeString('mn-MN');
+          pendingAudios.push({dataUrl: e.target.result, name});
+          renderAudioPreviews();
+        };
+        reader.readAsDataURL(blob);
+        stream.getTracks().forEach(t=>t.stop());
+      };
+      mediaRecorder.start();
+      isRecording = true;
+      document.getElementById('rec-btn').classList.add('recording');
+      document.getElementById('rec-label').textContent = 'Зогсоох';
+    } catch(e) { alert('Микрофон зөвшөөрөл олгоно уу'); }
+  } else {
+    mediaRecorder.stop();
+    isRecording = false;
+    document.getElementById('rec-btn').classList.remove('recording');
+    document.getElementById('rec-label').textContent = 'Дуу бичих';
+  }
+};
+
+function renderAudioPreviews() {
+  const c = document.getElementById('audio-previews');
+  c.innerHTML = '';
+  pendingAudios.forEach((a, i) => {
+    const div = document.createElement('div'); div.className='audio-item';
+    div.innerHTML = `<audio controls src="${a.dataUrl}"></audio><button class="rm" onclick="removePendingAudio(${i})">×</button>`;
+    c.appendChild(div);
+  });
+}
+window.removePendingAudio = function(i) { pendingAudios.splice(i,1); renderAudioPreviews(); };
+
+window.saveMeeting = function() {
+  const dateVal = document.getElementById('meet-date').value;
+  const noteVal = document.getElementById('meet-note').value.trim();
+  if (!dateVal && !noteVal && !pendingImgs.length && !pendingAudios.length) return;
+  const d = new Date(dateVal||Date.now());
+  const label = d.toLocaleDateString('mn-MN',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+  meetings.unshift({
+    id: Date.now(), dateLabel: label, note: noteVal,
+    imgs: [...pendingImgs], audios: [...pendingAudios]
+  });
+  saveMeetings();
+  // reset
+  document.getElementById('meet-note').value='';
+  pendingImgs=[]; pendingAudios=[];
+  renderImgPreviews(); renderAudioPreviews();
+  renderMeetFeed();
+};
+
+window.deleteMeeting = function(id) {
+  meetings = meetings.filter(x=>x.id!==id);
+  saveMeetings(); renderMeetFeed();
+};
+
+function renderMeetFeed() {
+  const feed = document.getElementById('meet-feed');
+  if (!meetings.length) {
+    feed.innerHTML='<div class="empty"><i class="fas fa-camera"></i>Уулзалт алга.<br>Дээрх хэсгээс нэмнэ үү.</div>';
+    return;
+  }
+  feed.innerHTML='';
+  meetings.forEach(m => {
+    const el = document.createElement('div'); el.className='meet-card';
+    const imgsHtml = m.imgs&&m.imgs.length
+      ? `<div class="meet-imgs">${m.imgs.map(img=>`<img class="meet-img" src="${img.dataUrl}" onclick="openLightbox('${img.dataUrl}')">`).join('')}</div>` : '';
+    const audiosHtml = m.audios&&m.audios.length
+      ? `<div class="meet-audios">${m.audios.map(a=>`<div class="audio-item"><audio controls src="${a.dataUrl}"></audio></div>`).join('')}</div>` : '';
+    el.innerHTML = `
+      <div class="meet-card-head">
+        <div class="meet-card-date">📅 ${m.dateLabel}</div>
+        <button class="meet-card-del" onclick="deleteMeeting(${m.id})">×</button>
+      </div>
+      ${m.note?`<div class="meet-card-note">${m.note}</div>`:''}
+      ${imgsHtml}${audiosHtml}`;
+    feed.appendChild(el);
+  });
+}
+
+window.openLightbox = function(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+};
+window.closeLightbox = function() {
+  document.getElementById('lightbox').classList.remove('open');
+};
+</script>
+</body>
+</html>
