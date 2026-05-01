@@ -735,8 +735,8 @@ function loadLocal() {
   try { reports = JSON.parse(localStorage.getItem('mr3')||'{}'); } catch(e) { reports={}; }
   try { tasks = JSON.parse(localStorage.getItem('mt3')||'{}'); } catch(e) { tasks={}; }
   try { portfolio = JSON.parse(localStorage.getItem('mp3')||'[]'); } catch(e) { portfolio=[]; }
-  document.getElementById('mentor-name').value = localStorage.getItem('mname3')||'';
-  document.getElementById('mentee-name').value = localStorage.getItem('mename3')||'';
+  const mentorEl = document.getElementById('mentor-name');
+  const menteeEl = document.getElementById('mentee-name');
 }
 function saveLocal() {
   localStorage.setItem('mr3', JSON.stringify(reports));
